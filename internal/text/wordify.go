@@ -38,6 +38,9 @@ func Wordify(s string) string {
 		}
 		addWord()
 	}
+	if len(newwords) == 0 {
+		return ""
+	}
 	return " " + strings.ToLower(strings.Join(newwords, " ")) + " "
 }
 
