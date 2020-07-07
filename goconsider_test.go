@@ -93,6 +93,30 @@ func TestLint(t *testing.T) {
 					},
 					Message: "Member name contains 'abcd', consider rephrasing to something else",
 				},
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInType.go",
+						Line:     7,
+						Column:   6,
+					},
+					Message: "Type name contains 'abcd', consider rephrasing to something else",
+				},
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInType.go",
+						Line:     7,
+						Column:   27,
+					},
+					Message: "Parameter name contains 'abcd', consider rephrasing to something else",
+				},
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInType.go",
+						Line:     7,
+						Column:   46,
+					},
+					Message: "Result name contains 'abcd', consider rephrasing to something else",
+				},
 			},
 		},
 	}
