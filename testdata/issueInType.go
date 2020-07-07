@@ -5,3 +5,7 @@ type AbcdThing struct {
 }
 
 type SpecialAbcdFunc func(abcdParam string) (resultAbcd int)
+
+type AbcdInterface interface {
+	AbcdFunc(abcdParam string) (resultAbcd int)
+}

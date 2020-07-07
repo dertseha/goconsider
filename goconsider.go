@@ -56,12 +56,20 @@ func checkComments(fset *token.FileSet, group *ast.CommentGroup, settings Settin
 
 func checkType(fset *token.FileSet, typeSpec *ast.TypeSpec, settings Settings) []Issue {
 	issues := checkGeneric(typeSpec.Name.Name, settings, "Type name", fset.Position(typeSpec.Name.Pos()))
-	switch spec := typeSpec.Type.(type) {
+	issues = append(issues, checkTypeExpr(fset, typeSpec.Type, settings)...)
+	return issues
+}
+
+func checkTypeExpr(fset *token.FileSet, typeExpr ast.Expr, settings Settings) []Issue {
+	var issues []Issue
+	switch spec := typeExpr.(type) {
 	case *ast.StructType:
 		issues = append(issues, checkFieldList(fset, spec.Fields, "Member name", settings)...)
 	case *ast.FuncType:
 		issues = append(issues, checkFieldList(fset, spec.Params, "Parameter name", settings)...)
 		issues = append(issues, checkFieldList(fset, spec.Results, "Result name", settings)...)
+	case *ast.InterfaceType:
+		issues = append(issues, checkFieldList(fset, spec.Methods, "Method name", settings)...)
 	}
 	return issues
 }
@@ -75,6 +83,7 @@ func checkFieldList(fset *token.FileSet, fields *ast.FieldList, prefix string, s
 		for _, name := range field.Names {
 			issues = append(issues, checkGeneric(name.Name, settings, prefix, fset.Position(name.Pos()))...)
 		}
+		issues = append(issues, checkTypeExpr(fset, field.Type, settings)...)
 	}
 	return issues
 }
