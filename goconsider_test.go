@@ -74,6 +74,27 @@ func TestLint(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "testdata/issueInType.go",
+			expected: []goconsider.Issue{
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInType.go",
+						Line:     3,
+						Column:   6,
+					},
+					Message: "Type name contains 'abcd', consider rephrasing to something else",
+				},
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInType.go",
+						Line:     4,
+						Column:   2,
+					},
+					Message: "Member name contains 'abcd', consider rephrasing to something else",
+				},
+			},
+		},
 	}
 
 	settings := goconsider.Settings{
