@@ -40,11 +40,13 @@ func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 			for _, spec := range typedDecl.Specs {
 				switch typedSpec := spec.(type) {
 				case *ast.TypeSpec:
-					found := checkType(fset, typedSpec, settings)
-					issues = append(issues, found...)
+					issues = append(issues, checkType(fset, typedSpec, settings)...)
 				}
 			}
+		case *ast.FuncDecl:
+			issues = append(issues, checkFunction(fset, typedDecl, settings)...)
 		}
+
 	}
 
 	return issues
@@ -66,11 +68,17 @@ func checkTypeExpr(fset *token.FileSet, typeExpr ast.Expr, settings Settings) []
 	case *ast.StructType:
 		issues = append(issues, checkFieldList(fset, spec.Fields, "Member name", settings)...)
 	case *ast.FuncType:
-		issues = append(issues, checkFieldList(fset, spec.Params, "Parameter name", settings)...)
-		issues = append(issues, checkFieldList(fset, spec.Results, "Result name", settings)...)
+		issues = append(issues, checkFuncType(fset, spec, settings)...)
 	case *ast.InterfaceType:
 		issues = append(issues, checkFieldList(fset, spec.Methods, "Method name", settings)...)
 	}
+	return issues
+}
+
+func checkFuncType(fset *token.FileSet, funcType *ast.FuncType, settings Settings) []Issue {
+	var issues []Issue
+	issues = append(issues, checkFieldList(fset, funcType.Params, "Parameter name", settings)...)
+	issues = append(issues, checkFieldList(fset, funcType.Results, "Result name", settings)...)
 	return issues
 }
 
@@ -85,6 +93,15 @@ func checkFieldList(fset *token.FileSet, fields *ast.FieldList, prefix string, s
 		}
 		issues = append(issues, checkTypeExpr(fset, field.Type, settings)...)
 	}
+	return issues
+}
+
+func checkFunction(fset *token.FileSet, funcDecl *ast.FuncDecl, settings Settings) []Issue {
+	var issues []Issue
+	issues = append(issues, checkGeneric(funcDecl.Name.Name, settings, "Function name", fset.Position(funcDecl.Name.Pos()))...)
+	issues = append(issues, checkFieldList(fset, funcDecl.Recv, "Function receiver", settings)...)
+	issues = append(issues, checkFuncType(fset, funcDecl.Type, settings)...)
+	// TODO: body
 	return issues
 }
 

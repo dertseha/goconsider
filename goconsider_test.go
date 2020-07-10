@@ -151,6 +151,21 @@ func TestLint(t *testing.T) {
 				},
 			},
 		},
+		/* TODO
+		{
+			name: "testdata/issueInFunction.go",
+			expected: []goconsider.Issue{
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInFunction.go",
+						Line:     3,
+						Column:   6,
+					},
+					Message: "Function name contains 'abcd', consider rephrasing to something else",
+				},
+			},
+		},
+		*/
 	}
 
 	settings := goconsider.Settings{
