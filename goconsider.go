@@ -26,13 +26,21 @@ type Issue struct {
 	Message string
 }
 
+type issueCollector struct {
+	settings Settings
+	fset     *token.FileSet
+	issues   []Issue
+}
+
 // Lint runs analysis on the provided code.
 func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
-	var issues []Issue
+	col := issueCollector{
+		settings: settings,
+		fset:     fset,
+	}
 
 	for _, group := range file.Comments {
-		found := checkComments(fset, group, settings)
-		issues = append(issues, found...)
+		col.checkComments(group)
 	}
 	for _, decl := range file.Decls {
 		switch typedDecl := decl.(type) {
@@ -40,89 +48,78 @@ func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 			for _, spec := range typedDecl.Specs {
 				switch typedSpec := spec.(type) {
 				case *ast.TypeSpec:
-					issues = append(issues, checkType(fset, typedSpec, settings)...)
+					col.checkType(typedSpec)
 				}
 			}
 		case *ast.FuncDecl:
-			issues = append(issues, checkFunction(fset, typedDecl, settings)...)
+			col.checkFunction(typedDecl)
 		}
 
 	}
-
-	return issues
+	return col.issues
 }
 
-func checkComments(fset *token.FileSet, group *ast.CommentGroup, settings Settings) []Issue {
-	return checkGeneric(group.Text(), settings, "Comment", fset.Position(group.Pos()))
+func (col *issueCollector) checkComments(group *ast.CommentGroup) {
+	col.checkGeneric(group.Text(), "Comment", group.Pos())
 }
 
-func checkType(fset *token.FileSet, typeSpec *ast.TypeSpec, settings Settings) []Issue {
-	issues := checkGeneric(typeSpec.Name.Name, settings, "Type name", fset.Position(typeSpec.Name.Pos()))
-	issues = append(issues, checkTypeExpr(fset, typeSpec.Type, settings)...)
-	return issues
+func (col *issueCollector) checkType(typeSpec *ast.TypeSpec) {
+	col.checkGeneric(typeSpec.Name.Name, "Type name", typeSpec.Name.Pos())
+	col.checkTypeExpr(typeSpec.Type)
 }
 
-func checkTypeExpr(fset *token.FileSet, typeExpr ast.Expr, settings Settings) []Issue {
-	var issues []Issue
+func (col *issueCollector) checkTypeExpr(typeExpr ast.Expr) {
 	switch spec := typeExpr.(type) {
 	case *ast.StructType:
-		issues = append(issues, checkFieldList(fset, spec.Fields, "Member name", settings)...)
+		col.checkFieldList(spec.Fields, "Member name")
 	case *ast.FuncType:
-		issues = append(issues, checkFuncType(fset, spec, settings)...)
+		col.checkFuncType(spec)
 	case *ast.InterfaceType:
-		issues = append(issues, checkFieldList(fset, spec.Methods, "Method name", settings)...)
+		col.checkFieldList(spec.Methods, "Method name")
 	}
-	return issues
 }
 
-func checkFuncType(fset *token.FileSet, funcType *ast.FuncType, settings Settings) []Issue {
-	var issues []Issue
-	issues = append(issues, checkFieldList(fset, funcType.Params, "Parameter name", settings)...)
-	issues = append(issues, checkFieldList(fset, funcType.Results, "Result name", settings)...)
-	return issues
+func (col *issueCollector) checkFuncType(funcType *ast.FuncType) {
+	col.checkFieldList(funcType.Params, "Parameter name")
+	col.checkFieldList(funcType.Results, "Result name")
 }
 
-func checkFieldList(fset *token.FileSet, fields *ast.FieldList, prefix string, settings Settings) []Issue {
-	var issues []Issue
+func (col *issueCollector) checkFieldList(fields *ast.FieldList, prefix string) {
 	if fields == nil {
-		return nil
+		return
 	}
 	for _, field := range fields.List {
 		for _, name := range field.Names {
-			issues = append(issues, checkGeneric(name.Name, settings, prefix, fset.Position(name.Pos()))...)
+			col.checkGeneric(name.Name, prefix, name.Pos())
 		}
-		issues = append(issues, checkTypeExpr(fset, field.Type, settings)...)
+		col.checkTypeExpr(field.Type)
 	}
-	return issues
 }
 
-func checkFunction(fset *token.FileSet, funcDecl *ast.FuncDecl, settings Settings) []Issue {
-	var issues []Issue
-	issues = append(issues, checkGeneric(funcDecl.Name.Name, settings, "Function name", fset.Position(funcDecl.Name.Pos()))...)
-	issues = append(issues, checkFieldList(fset, funcDecl.Recv, "Function receiver", settings)...)
-	issues = append(issues, checkFuncType(fset, funcDecl.Type, settings)...)
+func (col *issueCollector) checkFunction(funcDecl *ast.FuncDecl) {
+	col.checkGeneric(funcDecl.Name.Name, "Function name", funcDecl.Name.Pos())
+	col.checkFieldList(funcDecl.Recv, "Function receiver")
+	col.checkFuncType(funcDecl.Type)
 	// TODO: body
-	return issues
 }
 
-func checkGeneric(s string, settings Settings, typeString string, pos token.Position) []Issue {
-	var issues []Issue
-	addIssue := func(synonym string, alternatives []string) {
-		issue := Issue{
-			Pos:     pos,
-			Message: considerMessage(typeString+" contains", synonym, alternatives),
-		}
-		issues = append(issues, issue)
-	}
+func (col *issueCollector) checkGeneric(s string, typeString string, pos token.Pos) {
 	worded := text.Wordify(s)
-	for _, phrase := range settings.Phrases {
+	for _, phrase := range col.settings.Phrases {
 		for _, synonym := range phrase.Synonyms {
 			if strings.Contains(worded, " "+synonym+" ") {
-				addIssue(synonym, phrase.Alternatives)
+				col.addIssue(typeString, pos, synonym, phrase.Alternatives)
 			}
 		}
 	}
-	return issues
+}
+
+func (col *issueCollector) addIssue(typeString string, pos token.Pos, synonym string, alternatives []string) {
+	issue := Issue{
+		Pos:     col.fset.Position(pos),
+		Message: considerMessage(typeString+" contains", synonym, alternatives),
+	}
+	col.issues = append(col.issues, issue)
 }
 
 func considerMessage(prefix, synonym string, alternatives []string) string {
