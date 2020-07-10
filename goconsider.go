@@ -32,6 +32,17 @@ type issueCollector struct {
 	issues   []Issue
 }
 
+func considerMessage(prefix, synonym string, alternatives []string) string {
+	return fmt.Sprintf("%s '%s', consider rephrasing to %s", prefix, synonym, alternative(alternatives))
+}
+
+func alternative(list []string) string {
+	if len(list) == 0 {
+		return "something else"
+	}
+	return "one of [" + strings.Join(list, ", ") + "]"
+}
+
 // Lint runs analysis on the provided code.
 func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 	col := issueCollector{
@@ -42,6 +53,35 @@ func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 	col.checkCommentGroups(file.Comments)
 	col.checkDecls(file.Decls)
 	return col.issues
+}
+
+func (col *issueCollector) addIssue(typeString string, pos token.Pos, synonym string, alternatives []string) {
+	issue := Issue{
+		Pos:     col.fset.Position(pos),
+		Message: considerMessage(typeString+" contains", synonym, alternatives),
+	}
+	col.issues = append(col.issues, issue)
+}
+
+func (col *issueCollector) checkGeneric(s string, typeString string, pos token.Pos) {
+	worded := text.Wordify(s)
+	for _, phrase := range col.settings.Phrases {
+		for _, synonym := range phrase.Synonyms {
+			if strings.Contains(worded, " "+synonym+" ") {
+				col.addIssue(typeString, pos, synonym, phrase.Alternatives)
+			}
+		}
+	}
+}
+
+func (col *issueCollector) checkIdents(idents []*ast.Ident, prefix string) {
+	for _, ident := range idents {
+		col.checkIdent(ident, prefix)
+	}
+}
+
+func (col *issueCollector) checkIdent(ident *ast.Ident, typeString string) {
+	col.checkGeneric(ident.Name, typeString, ident.NamePos)
 }
 
 func (col *issueCollector) checkCommentGroups(groups []*ast.CommentGroup) {
@@ -177,11 +217,17 @@ func (col *issueCollector) checkStmt(stmt ast.Stmt) {
 	case *ast.CaseClause:
 		col.checkCaseClause(typedStmt)
 	case *ast.SwitchStmt:
+		col.checkSwitchStmt(typedStmt)
 	case *ast.TypeSwitchStmt:
+		col.checkTypeSwitchStmt(typedStmt)
 	case *ast.CommClause:
+		col.checkCommClause(typedStmt)
 	case *ast.SelectStmt:
+		col.checkSelectStmt(typedStmt)
 	case *ast.ForStmt:
+		col.checkForStmt(typedStmt)
 	case *ast.RangeStmt:
+		col.checkRangeStmt(typedStmt)
 	}
 }
 
@@ -192,6 +238,12 @@ func (col *issueCollector) checkLabelStmt(stmt *ast.LabeledStmt) {
 
 func (col *issueCollector) checkExprStmt(stmt *ast.ExprStmt) {
 	col.checkExpr(stmt.X)
+}
+
+func (col *issueCollector) checkExprs(exprs []ast.Expr) {
+	for _, expr := range exprs {
+		col.checkExpr(expr)
+	}
 }
 
 func (col *issueCollector) checkExpr(expr ast.Expr) {
@@ -225,50 +277,46 @@ func (col *issueCollector) checkIfStmt(stmt *ast.IfStmt) {
 }
 
 func (col *issueCollector) checkCaseClause(stmt *ast.CaseClause) {
+	col.checkExprs(stmt.List)
+	col.checkStmts(stmt.Body)
+}
 
+func (col *issueCollector) checkSwitchStmt(stmt *ast.SwitchStmt) {
+	col.checkStmt(stmt.Init)
+	col.checkExpr(stmt.Tag)
+	col.checkBlockStmt(stmt.Body)
+}
+
+func (col *issueCollector) checkTypeSwitchStmt(stmt *ast.TypeSwitchStmt) {
+	col.checkStmt(stmt.Init)
+	col.checkStmt(stmt.Assign)
+	col.checkBlockStmt(stmt.Body)
+}
+
+func (col *issueCollector) checkCommClause(stmt *ast.CommClause) {
+	col.checkStmt(stmt.Comm)
+	col.checkStmts(stmt.Body)
+}
+
+func (col *issueCollector) checkSelectStmt(stmt *ast.SelectStmt) {
+	col.checkBlockStmt(stmt.Body)
+}
+
+func (col *issueCollector) checkForStmt(stmt *ast.ForStmt) {
+	col.checkStmt(stmt.Init)
+	col.checkExpr(stmt.Cond)
+	col.checkStmt(stmt.Post)
+	col.checkBlockStmt(stmt.Body)
+}
+
+func (col *issueCollector) checkRangeStmt(stmt *ast.RangeStmt) {
+	col.checkExpr(stmt.Key)
+	col.checkExpr(stmt.Value)
+	col.checkExpr(stmt.X)
+	col.checkBlockStmt(stmt.Body)
 }
 
 func (col *issueCollector) checkFuncLit(funcLit *ast.FuncLit) {
 	col.checkFuncType(funcLit.Type)
 	col.checkBlockStmt(funcLit.Body)
-}
-
-func (col *issueCollector) checkIdents(idents []*ast.Ident, prefix string) {
-	for _, ident := range idents {
-		col.checkIdent(ident, prefix)
-	}
-}
-
-func (col *issueCollector) checkIdent(ident *ast.Ident, typeString string) {
-	col.checkGeneric(ident.Name, typeString, ident.NamePos)
-}
-
-func (col *issueCollector) checkGeneric(s string, typeString string, pos token.Pos) {
-	worded := text.Wordify(s)
-	for _, phrase := range col.settings.Phrases {
-		for _, synonym := range phrase.Synonyms {
-			if strings.Contains(worded, " "+synonym+" ") {
-				col.addIssue(typeString, pos, synonym, phrase.Alternatives)
-			}
-		}
-	}
-}
-
-func (col *issueCollector) addIssue(typeString string, pos token.Pos, synonym string, alternatives []string) {
-	issue := Issue{
-		Pos:     col.fset.Position(pos),
-		Message: considerMessage(typeString+" contains", synonym, alternatives),
-	}
-	col.issues = append(col.issues, issue)
-}
-
-func considerMessage(prefix, synonym string, alternatives []string) string {
-	return fmt.Sprintf("%s '%s', consider rephrasing to %s", prefix, synonym, alternative(alternatives))
-}
-
-func alternative(list []string) string {
-	if len(list) == 0 {
-		return "something else"
-	}
-	return "one of [" + strings.Join(list, ", ") + "]"
 }
