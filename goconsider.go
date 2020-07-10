@@ -38,37 +38,71 @@ func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 		settings: settings,
 		fset:     fset,
 	}
-
-	for _, group := range file.Comments {
-		col.checkComments(group)
-	}
-	for _, decl := range file.Decls {
-		switch typedDecl := decl.(type) {
-		case *ast.GenDecl:
-			for _, spec := range typedDecl.Specs {
-				switch typedSpec := spec.(type) {
-				case *ast.TypeSpec:
-					col.checkType(typedSpec)
-				}
-			}
-		case *ast.FuncDecl:
-			col.checkFunction(typedDecl)
-		}
-
-	}
+	// TODO: package name
+	col.checkCommentGroups(file.Comments)
+	col.checkDecls(file.Decls)
 	return col.issues
 }
 
-func (col *issueCollector) checkComments(group *ast.CommentGroup) {
+func (col *issueCollector) checkCommentGroups(groups []*ast.CommentGroup) {
+	for _, group := range groups {
+		col.checkCommentGroup(group)
+	}
+}
+
+func (col *issueCollector) checkCommentGroup(group *ast.CommentGroup) {
 	col.checkGeneric(group.Text(), "Comment", group.Pos())
 }
 
+func (col *issueCollector) checkDecls(decls []ast.Decl) {
+	for _, decl := range decls {
+		col.checkDecl(decl)
+	}
+}
+
+func (col *issueCollector) checkDecl(decl ast.Decl) {
+	if decl == nil {
+		return
+	}
+	switch typedDecl := decl.(type) {
+	case *ast.GenDecl:
+		col.checkGenDecl(typedDecl)
+	case *ast.FuncDecl:
+		col.checkFuncDecl(typedDecl)
+	}
+}
+
+func (col *issueCollector) checkGenDecl(typedDecl *ast.GenDecl) {
+	col.checkSpecs(typedDecl.Specs)
+}
+
+func (col *issueCollector) checkSpecs(specs []ast.Spec) {
+	for _, spec := range specs {
+		col.checkSpec(spec)
+	}
+}
+
+func (col *issueCollector) checkSpec(spec ast.Spec) {
+	if spec == nil {
+		return
+	}
+	switch typedSpec := spec.(type) {
+	case *ast.ImportSpec: // TODO: local package name
+	case *ast.ValueSpec: // TODO: names
+	case *ast.TypeSpec:
+		col.checkType(typedSpec)
+	}
+}
+
 func (col *issueCollector) checkType(typeSpec *ast.TypeSpec) {
-	col.checkGeneric(typeSpec.Name.Name, "Type name", typeSpec.Name.Pos())
+	col.checkIdent(typeSpec.Name, "Type name")
 	col.checkTypeExpr(typeSpec.Type)
 }
 
 func (col *issueCollector) checkTypeExpr(typeExpr ast.Expr) {
+	if typeExpr == nil {
+		return
+	}
 	switch spec := typeExpr.(type) {
 	case *ast.StructType:
 		col.checkFieldList(spec.Fields, "Member name")
@@ -89,18 +123,124 @@ func (col *issueCollector) checkFieldList(fields *ast.FieldList, prefix string) 
 		return
 	}
 	for _, field := range fields.List {
-		for _, name := range field.Names {
-			col.checkGeneric(name.Name, prefix, name.Pos())
-		}
-		col.checkTypeExpr(field.Type)
+		col.checkField(field, prefix)
 	}
 }
 
-func (col *issueCollector) checkFunction(funcDecl *ast.FuncDecl) {
-	col.checkGeneric(funcDecl.Name.Name, "Function name", funcDecl.Name.Pos())
+func (col *issueCollector) checkField(field *ast.Field, prefix string) {
+	col.checkIdents(field.Names, prefix)
+	col.checkTypeExpr(field.Type)
+}
+
+func (col *issueCollector) checkFuncDecl(funcDecl *ast.FuncDecl) {
+	col.checkIdent(funcDecl.Name, "Function name")
 	col.checkFieldList(funcDecl.Recv, "Function receiver")
 	col.checkFuncType(funcDecl.Type)
-	// TODO: body
+	col.checkBlockStmt(funcDecl.Body)
+}
+
+func (col *issueCollector) checkBlockStmt(block *ast.BlockStmt) {
+	if block == nil {
+		return
+	}
+	col.checkStmts(block.List)
+}
+
+func (col *issueCollector) checkStmts(stmts []ast.Stmt) {
+	for _, stmt := range stmts {
+		col.checkStmt(stmt)
+	}
+}
+
+func (col *issueCollector) checkStmt(stmt ast.Stmt) {
+	if stmt == nil {
+		return
+	}
+	switch typedStmt := stmt.(type) {
+	case *ast.DeclStmt:
+		col.checkDecl(typedStmt.Decl)
+	case *ast.LabeledStmt:
+		col.checkLabelStmt(typedStmt)
+	case *ast.ExprStmt:
+		col.checkExprStmt(typedStmt)
+	case *ast.SendStmt:
+	case *ast.IncDecStmt:
+	case *ast.AssignStmt:
+	case *ast.GoStmt:
+	case *ast.DeferStmt:
+	case *ast.ReturnStmt:
+	case *ast.BranchStmt:
+	case *ast.BlockStmt:
+		col.checkBlockStmt(typedStmt)
+	case *ast.IfStmt:
+		col.checkIfStmt(typedStmt)
+	case *ast.CaseClause:
+		col.checkCaseClause(typedStmt)
+	case *ast.SwitchStmt:
+	case *ast.TypeSwitchStmt:
+	case *ast.CommClause:
+	case *ast.SelectStmt:
+	case *ast.ForStmt:
+	case *ast.RangeStmt:
+	}
+}
+
+func (col *issueCollector) checkLabelStmt(stmt *ast.LabeledStmt) {
+	col.checkIdent(stmt.Label, "Label")
+	col.checkStmt(stmt.Stmt)
+}
+
+func (col *issueCollector) checkExprStmt(stmt *ast.ExprStmt) {
+	col.checkExpr(stmt.X)
+}
+
+func (col *issueCollector) checkExpr(expr ast.Expr) {
+	if expr == nil {
+		return
+	}
+	switch typedStmt := expr.(type) {
+	case *ast.Ident:
+	case *ast.Ellipsis:
+	case *ast.BasicLit:
+	case *ast.FuncLit:
+		col.checkFuncLit(typedStmt)
+	case *ast.CompositeLit:
+	case *ast.ParenExpr:
+	case *ast.SelectorExpr:
+	case *ast.IndexExpr:
+	case *ast.SliceExpr:
+	case *ast.TypeAssertExpr:
+	case *ast.CallExpr:
+	case *ast.StarExpr:
+	case *ast.UnaryExpr:
+	case *ast.BinaryExpr:
+	case *ast.KeyValueExpr:
+	}
+}
+
+func (col *issueCollector) checkIfStmt(stmt *ast.IfStmt) {
+	col.checkStmt(stmt.Init)
+	col.checkBlockStmt(stmt.Body)
+	col.checkStmt(stmt.Else)
+}
+
+func (col *issueCollector) checkCaseClause(stmt *ast.CaseClause) {
+
+}
+
+func (col *issueCollector) checkFuncLit(funcLit *ast.FuncLit) {
+	col.checkFuncType(funcLit.Type)
+	col.checkBlockStmt(funcLit.Body)
+}
+
+func (col *issueCollector) checkIdents(idents []*ast.Ident, prefix string) {
+	for _, ident := range idents {
+		col.checkIdent(ident, prefix)
+	}
+}
+
+func (col *issueCollector) checkIdent(ident *ast.Ident, typeString string) {
+	col.checkGeneric(ident.Name, typeString, ident.NamePos)
 }
 
 func (col *issueCollector) checkGeneric(s string, typeString string, pos token.Pos) {
