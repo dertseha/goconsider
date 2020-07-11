@@ -88,6 +88,35 @@ func TestLint(t *testing.T) {
 			},
 		},
 		{
+			name: "testdata/issueInValueName.go",
+			expected: []goconsider.Issue{
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInValueName.go",
+						Line:     5,
+						Column:   7,
+					},
+					Message: "Value name contains 'abcd', consider rephrasing to something else",
+				},
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInValueName.go",
+						Line:     7,
+						Column:   5,
+					},
+					Message: "Value name contains 'abcd', consider rephrasing to something else",
+				},
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInValueName.go",
+						Line:     10,
+						Column:   8,
+					},
+					Message: "Value name contains 'abcd', consider rephrasing to something else",
+				},
+			},
+		},
+		{
 			name: "testdata/issueInType.go",
 			expected: []goconsider.Issue{
 				{

@@ -132,7 +132,8 @@ func (col *issueCollector) checkSpec(spec ast.Spec) {
 	switch typedSpec := spec.(type) {
 	case *ast.ImportSpec:
 		col.checkImportSpec(typedSpec)
-	case *ast.ValueSpec: // TODO: names
+	case *ast.ValueSpec:
+		col.checkValueSpec(typedSpec)
 	case *ast.TypeSpec:
 		col.checkType(typedSpec)
 	}
@@ -140,6 +141,10 @@ func (col *issueCollector) checkSpec(spec ast.Spec) {
 
 func (col *issueCollector) checkImportSpec(spec *ast.ImportSpec) {
 	col.checkIdent(spec.Name, "Package alias")
+}
+
+func (col *issueCollector) checkValueSpec(spec *ast.ValueSpec) {
+	col.checkIdents(spec.Names, "Value name")
 }
 
 func (col *issueCollector) checkType(spec *ast.TypeSpec) {
