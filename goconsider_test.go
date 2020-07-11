@@ -27,189 +27,55 @@ func TestLint(t *testing.T) {
 		{
 			name: "testdata/issueInPackageComment.go",
 			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInPackageComment.go",
-						Line:     1,
-						Column:   1,
-					},
-					Message: "Comment contains 'abcd', consider rephrasing to something else",
-				},
+				makeIssue(1, 1, "Comment"),
 			},
 		},
 		{
 			name: "testdata/issueInFreefloatingComment.go",
 			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInFreefloatingComment.go",
-						Line:     3,
-						Column:   1,
-					},
-					Message: "Comment contains 'abcd', consider rephrasing to something else",
-				},
+				makeIssue(3, 1, "Comment"),
 			},
 		},
 		{
 			name: "testdata/issueInInlineComment.go",
 			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInInlineComment.go",
-						Line:     4,
-						Column:   2,
-					},
-					Message: "Comment contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInInlineComment.go",
-						Line:     5,
-						Column:   21,
-					},
-					Message: "Comment contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInInlineComment.go",
-						Offset:   0,
-						Line:     9,
-						Column:   22,
-					},
-					Message: "Comment contains 'abcd', consider rephrasing to something else",
-				},
+				makeIssue(4, 2, "Comment"),
+				makeIssue(5, 21, "Comment"),
+				makeIssue(9, 22, "Comment"),
 			},
 		},
 		{
 			name: "testdata/abcd/issueInPackageName.go",
 			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/abcd/issueInPackageName.go",
-						Line:     1,
-						Column:   9,
-					},
-					Message: "Package name contains 'abcd', consider rephrasing to something else",
-				},
+				makeIssue(1, 9, "Package name"),
 			},
 		},
 		{
 			name: "testdata/issueInImportName.go",
 			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInImportName.go",
-						Line:     4,
-						Column:   2,
-					},
-					Message: "Package alias contains 'abcd', consider rephrasing to something else",
-				},
+				makeIssue(4, 2, "Package alias"),
 			},
 		},
 		{
 			name: "testdata/issueInValueName.go",
 			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInValueName.go",
-						Line:     5,
-						Column:   7,
-					},
-					Message: "Value name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInValueName.go",
-						Line:     7,
-						Column:   5,
-					},
-					Message: "Value name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInValueName.go",
-						Line:     10,
-						Column:   8,
-					},
-					Message: "Value name contains 'abcd', consider rephrasing to something else",
-				},
+				makeIssue(5, 7, "Value name"),
+				makeIssue(7, 5, "Value name"),
+				makeIssue(10, 8, "Value name"),
 			},
 		},
 		{
 			name: "testdata/issueInType.go",
 			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     3,
-						Column:   6,
-					},
-					Message: "Type name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     4,
-						Column:   2,
-					},
-					Message: "Member name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     7,
-						Column:   6,
-					},
-					Message: "Type name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     7,
-						Column:   27,
-					},
-					Message: "Parameter name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     7,
-						Column:   46,
-					},
-					Message: "Result name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     9,
-						Column:   6,
-					},
-					Message: "Type name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     10,
-						Column:   2,
-					},
-					Message: "Method name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     10,
-						Column:   11,
-					},
-					Message: "Parameter name contains 'abcd', consider rephrasing to something else",
-				},
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInType.go",
-						Line:     10,
-						Column:   30,
-					},
-					Message: "Result name contains 'abcd', consider rephrasing to something else",
-				},
+				makeIssue(3, 6, "Type name"),
+				makeIssue(4, 2, "Member name"),
+				makeIssue(7, 6, "Type name"),
+				makeIssue(7, 27, "Parameter name"),
+				makeIssue(7, 46, "Result name"),
+				makeIssue(9, 6, "Type name"),
+				makeIssue(10, 2, "Method name"),
+				makeIssue(10, 11, "Parameter name"),
+				makeIssue(10, 30, "Result name"),
 			},
 		},
 		{
