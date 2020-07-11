@@ -81,6 +81,9 @@ func (col *issueCollector) checkIdents(idents []*ast.Ident, prefix string) {
 }
 
 func (col *issueCollector) checkIdent(ident *ast.Ident, typeString string) {
+	if ident == nil {
+		return
+	}
 	col.checkGeneric(ident.Name, typeString, ident.NamePos)
 }
 
@@ -127,16 +130,21 @@ func (col *issueCollector) checkSpec(spec ast.Spec) {
 		return
 	}
 	switch typedSpec := spec.(type) {
-	case *ast.ImportSpec: // TODO: local package name
+	case *ast.ImportSpec:
+		col.checkImportSpec(typedSpec)
 	case *ast.ValueSpec: // TODO: names
 	case *ast.TypeSpec:
 		col.checkType(typedSpec)
 	}
 }
 
-func (col *issueCollector) checkType(typeSpec *ast.TypeSpec) {
-	col.checkIdent(typeSpec.Name, "Type name")
-	col.checkTypeExpr(typeSpec.Type)
+func (col *issueCollector) checkImportSpec(spec *ast.ImportSpec) {
+	col.checkIdent(spec.Name, "Package alias")
+}
+
+func (col *issueCollector) checkType(spec *ast.TypeSpec) {
+	col.checkIdent(spec.Name, "Type name")
+	col.checkTypeExpr(spec.Type)
 }
 
 func (col *issueCollector) checkTypeExpr(typeExpr ast.Expr) {
@@ -252,6 +260,7 @@ func (col *issueCollector) checkExpr(expr ast.Expr) {
 	}
 	switch typedStmt := expr.(type) {
 	case *ast.Ident:
+		// col.checkIdent(typedStmt, "???") // TODO: which one is it?
 	case *ast.Ellipsis:
 	case *ast.BasicLit:
 	case *ast.FuncLit:

@@ -75,6 +75,19 @@ func TestLint(t *testing.T) {
 			},
 		},
 		{
+			name: "testdata/issueInImportName.go",
+			expected: []goconsider.Issue{
+				{
+					Pos: token.Position{
+						Filename: "testdata/issueInImportName.go",
+						Line:     4,
+						Column:   2,
+					},
+					Message: "Package alias contains 'abcd', consider rephrasing to something else",
+				},
+			},
+		},
+		{
 			name: "testdata/issueInType.go",
 			expected: []goconsider.Issue{
 				{
@@ -190,6 +203,41 @@ func TestLint(t *testing.T) {
 			expectedString := fmt.Sprintf("%v", tc.expected)
 			if issuesString != expectedString {
 				t.Errorf("Reported issues are not expected.\nGot: %+v\nWanted: %+v", issuesString, expectedString)
+			}
+		})
+	}
+}
+
+func TestLintIssueCount(t *testing.T) {
+	tt := []struct {
+		name     string
+		expected int
+	}{
+		{name: "testdata/issueFree.go", expected: 0},
+		{name: "testdata/issueCountIgnoreTypeUse.go", expected: 1},
+	}
+
+	settings := goconsider.Settings{
+		Phrases: []goconsider.Phrase{
+			{Synonyms: []string{"abcd"}, Alternatives: nil},
+		},
+		Escapes: nil,
+	}
+
+	for _, tc := range tt {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fset := token.NewFileSet()
+			file, err := parser.ParseFile(fset, tc.name, nil, parser.ParseComments)
+			if err != nil {
+				t.Errorf("File could not be parsed")
+				return
+			}
+
+			issues := goconsider.Lint(file, fset, settings)
+
+			if tc.expected != len(issues) {
+				t.Errorf("Reported issue count is not expected.\nGot: %v\nWanted: %v", tc.expected, len(issues))
 			}
 		})
 	}
