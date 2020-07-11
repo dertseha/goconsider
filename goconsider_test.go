@@ -10,6 +10,12 @@ import (
 )
 
 func TestLint(t *testing.T) {
+	makeIssue := func(line, col int, prefix string) goconsider.Issue {
+		return goconsider.Issue{
+			Pos:     token.Position{Line: line, Column: col},
+			Message: prefix + " contains 'abcd', consider rephrasing to something else",
+		}
+	}
 	tt := []struct {
 		name     string
 		expected []goconsider.Issue
@@ -206,6 +212,18 @@ func TestLint(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "testdata/issueInFunction.go",
+			expected: []goconsider.Issue{
+				makeIssue(5, 36, "Function name"),
+				makeIssue(5, 7, "Function receiver"),
+				makeIssue(5, 53, "Parameter name"),
+				makeIssue(5, 72, "Result name"),
+				makeIssue(6, 2, "Identifier"),
+				makeIssue(6, 22, "Parameter name"),
+				makeIssue(9, 2, "Identifier"),
+			},
+		},
 	}
 
 	settings := goconsider.Settings{
@@ -227,6 +245,9 @@ func TestLint(t *testing.T) {
 
 			issues := goconsider.Lint(file, fset, settings)
 			issuesString := fmt.Sprintf("%v", issues)
+			for i := 0; i < len(tc.expected); i++ {
+				tc.expected[i].Pos.Filename = tc.name
+			}
 			expectedString := fmt.Sprintf("%v", tc.expected)
 			if issuesString != expectedString {
 				t.Errorf("Reported issues are not expected.\nGot: %+v\nWanted: %+v", issuesString, expectedString)
@@ -242,7 +263,7 @@ func TestLintIssueCount(t *testing.T) {
 	}{
 		{name: "testdata/issueFree.go", expected: 0},
 		{name: "testdata/issueCountIgnoreTypeUse.go", expected: 1},
-		// TODO: {name: "testdata/issueInFunction.go", expected: },
+		{name: "testdata/issueInFunction.go", expected: 7},
 	}
 
 	settings := goconsider.Settings{
@@ -265,7 +286,7 @@ func TestLintIssueCount(t *testing.T) {
 			issues := goconsider.Lint(file, fset, settings)
 
 			if tc.expected != len(issues) {
-				t.Errorf("Reported issue count is not expected.\nGot: %v\nWanted: %v", tc.expected, len(issues))
+				t.Errorf("Reported issue count is not expected.\nGot: %v\nWanted: %v", len(issues), tc.expected)
 			}
 		})
 	}

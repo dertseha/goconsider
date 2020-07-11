@@ -30,6 +30,8 @@ type issueCollector struct {
 	settings Settings
 	fset     *token.FileSet
 	issues   []Issue
+
+	issuesSuppressed bool
 }
 
 func considerMessage(prefix, synonym string, alternatives []string) string {
@@ -55,7 +57,16 @@ func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 	return col.issues
 }
 
+func (col *issueCollector) suppressIssues(on bool) func() {
+	currentSuppression := col.issuesSuppressed
+	col.issuesSuppressed = on
+	return func() { col.issuesSuppressed = currentSuppression }
+}
+
 func (col *issueCollector) addIssue(typeString string, pos token.Pos, synonym string, alternatives []string) {
+	if col.issuesSuppressed {
+		return
+	}
 	issue := Issue{
 		Pos:     col.fset.Position(pos),
 		Message: considerMessage(typeString+" contains", synonym, alternatives),
@@ -107,12 +118,14 @@ func (col *issueCollector) checkDecl(decl ast.Decl) {
 	if decl == nil {
 		return
 	}
+	reset := col.suppressIssues(false)
 	switch typedDecl := decl.(type) {
 	case *ast.GenDecl:
 		col.checkGenDecl(typedDecl)
 	case *ast.FuncDecl:
 		col.checkFuncDecl(typedDecl)
 	}
+	reset()
 }
 
 func (col *issueCollector) checkGenDecl(typedDecl *ast.GenDecl) {
@@ -219,6 +232,7 @@ func (col *issueCollector) checkStmt(stmt ast.Stmt) {
 	case *ast.SendStmt:
 	case *ast.IncDecStmt:
 	case *ast.AssignStmt:
+		col.checkAssignStmt(typedStmt)
 	case *ast.GoStmt:
 	case *ast.DeferStmt:
 	case *ast.ReturnStmt:
@@ -253,6 +267,16 @@ func (col *issueCollector) checkExprStmt(stmt *ast.ExprStmt) {
 	col.checkExpr(stmt.X)
 }
 
+func (col *issueCollector) checkAssignStmt(stmt *ast.AssignStmt) {
+	reset := col.suppressIssues(stmt.Tok != token.DEFINE)
+	col.checkExprs(stmt.Lhs)
+	reset()
+
+	reset = col.suppressIssues(true)
+	col.checkExprs(stmt.Rhs)
+	reset()
+}
+
 func (col *issueCollector) checkExprs(exprs []ast.Expr) {
 	for _, expr := range exprs {
 		col.checkExpr(expr)
@@ -265,7 +289,7 @@ func (col *issueCollector) checkExpr(expr ast.Expr) {
 	}
 	switch typedStmt := expr.(type) {
 	case *ast.Ident:
-		// at this level this could be a RHS expression, which is not intended.
+		col.checkIdent(typedStmt, "Identifier")
 	case *ast.Ellipsis:
 	case *ast.BasicLit:
 	case *ast.FuncLit:
@@ -331,6 +355,8 @@ func (col *issueCollector) checkRangeStmt(stmt *ast.RangeStmt) {
 }
 
 func (col *issueCollector) checkFuncLit(funcLit *ast.FuncLit) {
+	reset := col.suppressIssues(false)
 	col.checkFuncType(funcLit.Type)
 	col.checkBlockStmt(funcLit.Body)
+	reset()
 }
