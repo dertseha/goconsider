@@ -49,7 +49,7 @@ func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 		settings: settings,
 		fset:     fset,
 	}
-	// TODO: package name
+	col.checkIdent(file.Name, "Package name")
 	col.checkCommentGroups(file.Comments)
 	col.checkDecls(file.Decls)
 	return col.issues
@@ -265,7 +265,7 @@ func (col *issueCollector) checkExpr(expr ast.Expr) {
 	}
 	switch typedStmt := expr.(type) {
 	case *ast.Ident:
-		// col.checkIdent(typedStmt, "???") // TODO: which one is it?
+		// at this level this could be a RHS expression, which is not intended.
 	case *ast.Ellipsis:
 	case *ast.BasicLit:
 	case *ast.FuncLit:

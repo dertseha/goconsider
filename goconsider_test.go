@@ -75,6 +75,19 @@ func TestLint(t *testing.T) {
 			},
 		},
 		{
+			name: "testdata/abcd/issueInPackageName.go",
+			expected: []goconsider.Issue{
+				{
+					Pos: token.Position{
+						Filename: "testdata/abcd/issueInPackageName.go",
+						Line:     1,
+						Column:   9,
+					},
+					Message: "Package name contains 'abcd', consider rephrasing to something else",
+				},
+			},
+		},
+		{
 			name: "testdata/issueInImportName.go",
 			expected: []goconsider.Issue{
 				{
@@ -193,21 +206,6 @@ func TestLint(t *testing.T) {
 				},
 			},
 		},
-		/* TODO
-		{
-			name: "testdata/issueInFunction.go",
-			expected: []goconsider.Issue{
-				{
-					Pos: token.Position{
-						Filename: "testdata/issueInFunction.go",
-						Line:     3,
-						Column:   6,
-					},
-					Message: "Function name contains 'abcd', consider rephrasing to something else",
-				},
-			},
-		},
-		*/
 	}
 
 	settings := goconsider.Settings{
@@ -244,6 +242,7 @@ func TestLintIssueCount(t *testing.T) {
 	}{
 		{name: "testdata/issueFree.go", expected: 0},
 		{name: "testdata/issueCountIgnoreTypeUse.go", expected: 1},
+		// TODO: {name: "testdata/issueInFunction.go", expected: },
 	}
 
 	settings := goconsider.Settings{
