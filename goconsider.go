@@ -9,17 +9,6 @@ import (
 	"github.com/dertseha/goconsider/internal/text"
 )
 
-type Phrase struct {
-	Synonyms     []string
-	Alternatives []string
-}
-
-// Settings contain all the parameters for the analysis.
-type Settings struct {
-	Phrases []Phrase
-	Escapes []string
-}
-
 // Issue describes an occurrence of an unwanted phrase.
 type Issue struct {
 	Pos     token.Position

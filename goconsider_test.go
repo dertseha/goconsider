@@ -96,7 +96,6 @@ func TestLint(t *testing.T) {
 		Phrases: []goconsider.Phrase{
 			{Synonyms: []string{"abcd"}, Alternatives: nil},
 		},
-		Escapes: nil,
 	}
 
 	for _, tc := range tt {
@@ -136,7 +135,6 @@ func TestLintIssueCount(t *testing.T) {
 		Phrases: []goconsider.Phrase{
 			{Synonyms: []string{"abcd"}, Alternatives: nil},
 		},
-		Escapes: nil,
 	}
 
 	for _, tc := range tt {
