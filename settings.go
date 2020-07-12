@@ -61,17 +61,55 @@ func forEnglish(settings Settings) Settings {
 	add := func(p Phrase) {
 		settings.Phrases = append(settings.Phrases, p)
 	}
+
+	const linuxKernel = "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49decddd39e5f6132ccd7d9fdc3d7c470b0061bb"
+	const twitter = "https://www.cnet.com/news/twitter-engineers-replace-racially-loaded-tech-terms-like-master-slave/"
+	const google = "https://developers.google.com/style/inclusive-documentation"
+	const googlePronouns = "https://developers.google.com/style/pronouns#gender-neutral-pronouns"
+
 	add(phraseWith(synonyms("master"),
 		alternatives("primary", "leader", "main"),
-		references(
-			"https://www.cnet.com/news/twitter-engineers-replace-racially-loaded-tech-terms-like-master-slave/",
-			"https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49decddd39e5f6132ccd7d9fdc3d7c470b0061bb"),
+		references(linuxKernel, twitter),
 	))
 	add(phraseWith(synonyms("slave"),
-		alternatives("secondary", "follower", "replica"),
-		references(
-			"https://www.cnet.com/news/twitter-engineers-replace-racially-loaded-tech-terms-like-master-slave/",
-			"https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49decddd39e5f6132ccd7d9fdc3d7c470b0061bb"),
+		alternatives("secondary", "follower", "replica", "standby"),
+		references(linuxKernel, twitter),
+	))
+
+	add(phraseWith(synonyms("whitelist"),
+		alternatives("allowlist", "passlist"),
+		references(linuxKernel, twitter),
+	))
+	add(phraseWith(synonyms("blacklist"),
+		alternatives("denylist", "blocklist"),
+		references(linuxKernel, twitter),
+	))
+
+	add(phraseWith(synonyms("grandfathered"),
+		alternatives("legacy status"),
+		references(twitter),
+	))
+
+	add(phraseWith(synonyms("guys"),
+		alternatives("people", "folks", "you all"),
+		references(twitter),
+	))
+	add(phraseWith(synonyms("he", "his", "him"),
+		alternatives("their", "them"),
+		references(googlePronouns, twitter),
+	))
+	add(phraseWith(synonyms("man hours"),
+		alternatives("person hours", "engineer hours"),
+		references(google, twitter),
+	))
+
+	add(phraseWith(synonyms("dummy"),
+		alternatives("placeholder", "sample"),
+		references(google, twitter),
+	))
+	add(phraseWith(synonyms("sanity check"),
+		alternatives("quick check"),
+		references(google, twitter),
 	))
 	return settings
 }
