@@ -35,7 +35,7 @@ goconsider ./project-dir
 ## Configuration
 
 ### Default
-By default, the tool comes with a list of English phrases "commonly" considered inappropriate.
+By default, the tool comes with a list of English phrases that are considered inappropriate.
 It also proposes alternatives. See file [`settings.go`](settings.go).
 
 ## TODO
