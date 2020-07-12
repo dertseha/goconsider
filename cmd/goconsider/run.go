@@ -61,7 +61,13 @@ godot [OPTIONS] [FILES]
 Options:
 	-h, --help      show this message
 `
-	_, _ = fmt.Fprintf(out, usage)
+	_, _ = fmt.Fprint(out, usage)
+}
+
+type unknownArgumentErr string
+
+func (err unknownArgumentErr) Error() string {
+	return fmt.Sprintf("unknown argument '%s'", string(err))
 }
 
 func parseArguments(rawArgs []string) (arguments, error) {
@@ -77,7 +83,7 @@ func parseArguments(rawArgs []string) (arguments, error) {
 		case "-h", "--help":
 			args.help = true
 		default:
-			return arguments{}, fmt.Errorf("unknown argument '%s'", arg)
+			return arguments{}, unknownArgumentErr(arg)
 		}
 	}
 	return args, nil

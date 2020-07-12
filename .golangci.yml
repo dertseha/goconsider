@@ -1,5 +1,5 @@
 service:
-  golangci-lint-version: 1.27.x
+  golangci-lint-version: 1.28.x
 
 run:
   deadline: 5m
@@ -10,6 +10,8 @@ linters:
   # linters are disabled if their majority of issues is considered false-positive (intended code)
   # and the remaining issues (if existing) aren't worth it.
   disable:
+    - wsl # too pedantic/subjective
+    - gofumpt # Stick to standard gofmt
 
 issues:
   exclude-use-default: false # disable filtering of defaults for better zero-issue policy

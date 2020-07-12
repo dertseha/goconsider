@@ -34,7 +34,7 @@ func Wordify(s string) string {
 				addWord()
 			}
 			lastCase = currentCase
-			currentPart = currentPart + string(r)
+			currentPart += string(r)
 		}
 		addWord()
 	}
