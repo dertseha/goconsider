@@ -20,9 +20,9 @@ import (
 
 type arguments struct {
 	help         bool
+	noReferences bool
 	filenames    []string
 	settings     string
-	noReferences bool
 }
 
 type issuesFoundError int
@@ -73,7 +73,7 @@ func defaultSettings() (goconsider.Settings, error) {
 }
 
 func parseSettings(filename string) (goconsider.Settings, error) {
-	settingsData, err := ioutil.ReadFile(filename)
+	settingsData, err := ioutil.ReadFile(filename) // nolint: gosec
 	if err != nil {
 		return goconsider.Settings{}, err
 	}
