@@ -18,7 +18,13 @@ type arguments struct {
 	filenames []string
 }
 
-func run(rawArgs []string, out io.Writer) error {
+type issuesFoundError int
+
+func (err issuesFoundError) Error() string {
+	return fmt.Sprintf("%v issues were found", int(err))
+}
+
+func run(out io.Writer, rawArgs []string) error {
 	args, err := parseArguments(rawArgs)
 	if err != nil {
 		return err
@@ -30,27 +36,13 @@ func run(rawArgs []string, out io.Writer) error {
 
 	settings := goconsider.DefaultSettings()
 
-	var files []*ast.File
-	fset := token.NewFileSet()
-	for _, filename := range args.filenames {
-		paths := allGoFilesIn(filename)
-		for p := range paths {
-			if p.err != nil {
-				return p.err
-			}
-
-			file, err := parser.ParseFile(fset, p.filepath, nil, parser.ParseComments)
-			if err != nil {
-				return fmt.Errorf("failed to parse file '%s': %w", p.filepath, err)
-			}
-			files = append(files, file)
-		}
+	fset, files, err := parseFiles(args.filenames)
+	if err != nil {
+		return err
 	}
-	for _, file := range files {
-		issues := goconsider.Lint(file, fset, settings)
-		for _, issue := range issues {
-			_, _ = fmt.Fprintf(out, "%s: %s\n", issue.Pos, issue.Message)
-		}
+	issueCount := lintAndReport(out, fset, files, settings)
+	if issueCount > 0 {
+		return issuesFoundError(issueCount)
 	}
 	return nil
 }
@@ -94,6 +86,26 @@ type pathOrErr struct {
 	err      error
 }
 
+func parseFiles(filenames []string) (*token.FileSet, []*ast.File, error) {
+	var files []*ast.File
+	fset := token.NewFileSet()
+	for _, filename := range filenames {
+		paths := allGoFilesIn(filename)
+		for p := range paths {
+			if p.err != nil {
+				return nil, nil, p.err
+			}
+
+			file, err := parser.ParseFile(fset, p.filepath, nil, parser.ParseComments)
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to parse file '%s': %w", p.filepath, err)
+			}
+			files = append(files, file)
+		}
+	}
+	return fset, files, nil
+}
+
 func allGoFilesIn(root string) chan pathOrErr {
 	paths := make(chan pathOrErr)
 
@@ -127,4 +139,16 @@ func hasVendorPath(s string) bool {
 
 func isAGoFile(info os.FileInfo) bool {
 	return !info.IsDir() && strings.HasSuffix(info.Name(), ".go")
+}
+
+func lintAndReport(out io.Writer, fset *token.FileSet, files []*ast.File, settings goconsider.Settings) int {
+	issueCount := 0
+	for _, file := range files {
+		issues := goconsider.Lint(file, fset, settings)
+		issueCount += len(issues)
+		for _, issue := range issues {
+			_, _ = fmt.Fprintf(out, "%s: %s\n", issue.Pos, issue.Message)
+		}
+	}
+	return issueCount
 }
