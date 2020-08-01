@@ -72,16 +72,16 @@ func forEnglish(settings Settings) Settings {
 		alternatives("primary", "leader", "main"),
 		references(linuxKernel, twitter),
 	))
-	add(phraseWith(synonyms("slave"),
+	add(phraseWith(synonyms("slave", "slaves"),
 		alternatives("secondary", "follower", "replica", "standby"),
 		references(linuxKernel, twitter),
 	))
 
-	add(phraseWith(synonyms("whitelist"),
+	add(phraseWith(synonyms("whitelist", "whitelists"),
 		alternatives("allowlist", "passlist"),
 		references(linuxKernel, twitter),
 	))
-	add(phraseWith(synonyms("blacklist"),
+	add(phraseWith(synonyms("blacklist", "blacklists"),
 		alternatives("denylist", "blocklist"),
 		references(linuxKernel, twitter),
 	))
@@ -91,7 +91,7 @@ func forEnglish(settings Settings) Settings {
 		references(twitter),
 	))
 
-	add(phraseWith(synonyms("guys"),
+	add(phraseWith(synonyms("guy", "guys"),
 		alternatives("people", "folks", "you all"),
 		references(twitter),
 	))
@@ -99,7 +99,7 @@ func forEnglish(settings Settings) Settings {
 		alternatives("their", "them"),
 		references(googlePronouns, twitter),
 	))
-	add(phraseWith(synonyms("man hours"),
+	add(phraseWith(synonyms("man hour", "man hours"),
 		alternatives("person hours", "engineer hours"),
 		references(google, twitter),
 	))
@@ -108,7 +108,7 @@ func forEnglish(settings Settings) Settings {
 		alternatives("placeholder", "sample"),
 		references(google, twitter),
 	))
-	add(phraseWith(synonyms("sanity check"),
+	add(phraseWith(synonyms("sanity check", "sanity checks"),
 		alternatives("quick check"),
 		references(google, twitter),
 	))
