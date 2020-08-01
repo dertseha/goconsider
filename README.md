@@ -82,7 +82,6 @@ or a comment like `The bad thing maker does stuff`.
 
 ## TODO
 
-* Figure out whether and how references should be reported.
 * Consider integration in `golangci-lint`.
 * Implement check for filenames themselves.
 

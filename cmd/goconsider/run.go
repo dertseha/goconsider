@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -18,9 +19,10 @@ import (
 )
 
 type arguments struct {
-	help      bool
-	filenames []string
-	settings  string
+	help         bool
+	filenames    []string
+	settings     string
+	noReferences bool
 }
 
 type issuesFoundError int
@@ -53,7 +55,7 @@ func run(out io.Writer, rawArgs []string) error {
 	if err != nil {
 		return err
 	}
-	issueCount := lintAndReport(out, fset, files, settings)
+	issueCount := lintAndReport(out, fset, files, settings, !args.noReferences)
 	if issueCount > 0 {
 		return issuesFoundError(issueCount)
 	}
@@ -89,6 +91,7 @@ goconsider [OPTIONS] [FILES]
 Options:
 	-h, --help             Show this message
 	--settings <filename>  Name of a settings file. Defaults to '.goconsider' in current working directory.
+	--noReferences         Skip printing references as per settings for any found issues.
 `
 	_, _ = fmt.Fprint(out, usage)
 }
@@ -124,6 +127,8 @@ func parseArguments(rawArgs []string) (arguments, error) {
 				return arguments{}, missingParameterErr(arg)
 			}
 			args.settings = rawArgs[i]
+		case "--noReferences":
+			args.noReferences = true
 		default:
 			return arguments{}, unknownArgumentErr(arg)
 		}
@@ -191,13 +196,28 @@ func isAGoFile(info os.FileInfo) bool {
 	return !info.IsDir() && strings.HasSuffix(info.Name(), ".go")
 }
 
-func lintAndReport(out io.Writer, fset *token.FileSet, files []*ast.File, settings goconsider.Settings) int {
+func lintAndReport(out io.Writer, fset *token.FileSet, files []*ast.File, settings goconsider.Settings, reportRef bool) int {
 	issueCount := 0
+	references := make(map[string]struct{})
 	for _, file := range files {
 		issues := goconsider.Lint(file, fset, settings)
 		issueCount += len(issues)
 		for _, issue := range issues {
 			_, _ = fmt.Fprintf(out, "%s: %s\n", issue.Pos, issue.Message)
+			for _, ref := range issue.References {
+				references[ref] = struct{}{}
+			}
+		}
+	}
+	if reportRef && len(references) > 0 {
+		refList := make([]string, 0, len(references))
+		for ref := range references {
+			refList = append(refList, ref)
+		}
+		sort.StringSlice(refList).Sort()
+		_, _ = fmt.Fprintf(out, "References:\n")
+		for _, ref := range refList {
+			_, _ = fmt.Fprintf(out, "%s\n", ref)
 		}
 	}
 	return issueCount

@@ -11,8 +11,9 @@ import (
 
 // Issue describes an occurrence of an unwanted phrase.
 type Issue struct {
-	Pos     token.Position
-	Message string
+	Pos        token.Position
+	Message    string
+	References []string
 }
 
 type issueCollector struct {
@@ -52,13 +53,14 @@ func (col *issueCollector) suppressIssues(on bool) func() {
 	return func() { col.issuesSuppressed = currentSuppression }
 }
 
-func (col *issueCollector) addIssue(typeString string, pos token.Pos, synonym string, alternatives []string) {
+func (col *issueCollector) addIssue(typeString string, pos token.Pos, synonym string, phrase Phrase) {
 	if col.issuesSuppressed {
 		return
 	}
 	issue := Issue{
-		Pos:     col.fset.Position(pos),
-		Message: considerMessage(typeString+" contains", synonym, alternatives),
+		Pos:        col.fset.Position(pos),
+		Message:    considerMessage(typeString+" contains", synonym, phrase.Alternatives),
+		References: phrase.References,
 	}
 	col.issues = append(col.issues, issue)
 }
@@ -68,7 +70,7 @@ func (col *issueCollector) checkGeneric(s string, typeString string, pos token.P
 	for _, phrase := range col.settings.Phrases {
 		for _, synonym := range phrase.Synonyms {
 			if strings.Contains(worded, " "+synonym+" ") {
-				col.addIssue(typeString, pos, synonym, phrase.Alternatives)
+				col.addIssue(typeString, pos, synonym, phrase)
 			}
 		}
 	}
