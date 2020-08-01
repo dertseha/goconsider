@@ -48,7 +48,7 @@ Options:
 ### Default
 #### Implicit
 The tool will look for a `.goconsider.yaml` file in the current working directory.
-See "explicit" configuration, below.
+See "explicit" configuration, below, for an example.
 
 If no such file exists, then the internal defaults will be used. 
 
