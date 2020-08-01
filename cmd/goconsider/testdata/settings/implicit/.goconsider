@@ -1,0 +1,4 @@
+phrases:
+  - synonyms: [xyz]
+    alternatives: [this, that]
+    references: [test]

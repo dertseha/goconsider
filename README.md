@@ -40,7 +40,6 @@ It also proposes alternatives. See file [`settings.go`](settings.go).
 
 ## TODO
 
-* Support configuration file for CLI.
 * Better documentation on how the tool finds phrases.
 * Figure out whether and how references should be reported.
 * Consider integration in `golangci-lint`.

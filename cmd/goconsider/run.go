@@ -6,9 +6,13 @@ import (
 	"go/parser"
 	"go/token"
 	"io"
+	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/dertseha/goconsider"
 )
@@ -16,6 +20,7 @@ import (
 type arguments struct {
 	help      bool
 	filenames []string
+	settings  string
 }
 
 type issuesFoundError int
@@ -34,7 +39,15 @@ func run(out io.Writer, rawArgs []string) error {
 		return nil
 	}
 
-	settings := goconsider.DefaultSettings()
+	var settings goconsider.Settings
+	if len(args.settings) > 0 {
+		settings, err = parseSettings(args.settings)
+	} else {
+		settings, err = defaultSettings()
+	}
+	if err != nil {
+		return err
+	}
 
 	fset, files, err := parseFiles(args.filenames)
 	if err != nil {
@@ -47,11 +60,35 @@ func run(out io.Writer, rawArgs []string) error {
 	return nil
 }
 
+const implicitSettingsFilename = ".goconsider"
+
+func defaultSettings() (goconsider.Settings, error) {
+	filename := path.Join(".", implicitSettingsFilename)
+	if _, err := os.Stat(filename); err != nil {
+		return goconsider.DefaultSettings(), nil
+	}
+	return parseSettings(filename)
+}
+
+func parseSettings(filename string) (goconsider.Settings, error) {
+	settingsData, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return goconsider.Settings{}, err
+	}
+	var settings goconsider.Settings
+	err = yaml.Unmarshal(settingsData, &settings)
+	if err != nil {
+		return goconsider.Settings{}, err
+	}
+	return settings, nil
+}
+
 func printUsage(out io.Writer) {
 	const usage = `Usage:
-godot [OPTIONS] [FILES]
+goconsider [OPTIONS] [FILES]
 Options:
-	-h, --help      show this message
+	-h, --help             Show this message
+	--settings <filename>  Name of a settings file. Defaults to '.goconsider' in current working directory.
 `
 	_, _ = fmt.Fprint(out, usage)
 }
@@ -62,10 +99,17 @@ func (err unknownArgumentErr) Error() string {
 	return fmt.Sprintf("unknown argument '%s'", string(err))
 }
 
+type missingParameterErr string
+
+func (err missingParameterErr) Error() string {
+	return fmt.Sprintf("argument '%s' is missing a parameter", string(err))
+}
+
 func parseArguments(rawArgs []string) (arguments, error) {
 	var args arguments
 
-	for _, arg := range rawArgs {
+	for i := 0; i < len(rawArgs); i++ {
+		arg := rawArgs[i]
 		if !strings.HasPrefix(arg, "-") {
 			args.filenames = append(args.filenames, arg)
 			continue
@@ -74,6 +118,12 @@ func parseArguments(rawArgs []string) (arguments, error) {
 		switch arg {
 		case "-h", "--help":
 			args.help = true
+		case "--settings":
+			i++
+			if i >= len(rawArgs) {
+				return arguments{}, missingParameterErr(arg)
+			}
+			args.settings = rawArgs[i]
 		default:
 			return arguments{}, unknownArgumentErr(arg)
 		}
