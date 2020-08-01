@@ -32,6 +32,17 @@ go get -u github.com/dertseha/goconsider/cmd/goconsider
 goconsider ./project-dir
 ```
 
+### Usage
+```
+> goconsider --help
+Usage:
+goconsider [OPTIONS] [FILES]
+Options:
+        -h, --help             Show this message
+        --settings <filename>  Name of a settings file. Defaults to '.goconsider' in current working directory.
+        --noReferences         Skip printing references as per settings for any found issues.
+```
+
 ## Configuration
 
 ### Default
