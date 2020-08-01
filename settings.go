@@ -2,12 +2,13 @@ package goconsider
 
 // Settings contain all the parameters for the analysis.
 type Settings struct {
+	// Phrases describe all the texts the linter should look for
 	Phrases []Phrase
 }
 
 // Phrase describes an expression, with optional alternatives, that the linter flags.
 type Phrase struct {
-	// Synonyms are one or more expressions the linter looks for.
+	// Synonyms are one or more expressions that have the same meaning and proposed alternatives.
 	Synonyms []string
 	// Alternatives are zero, one, or more expressions that are provided as replacement.
 	Alternatives []string
