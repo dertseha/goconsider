@@ -60,7 +60,7 @@ func run(out io.Writer, rawArgs []string) error {
 	return nil
 }
 
-const implicitSettingsFilename = ".goconsider"
+const implicitSettingsFilename = ".goconsider.yaml"
 
 func defaultSettings() (goconsider.Settings, error) {
 	filename := path.Join(".", implicitSettingsFilename)
