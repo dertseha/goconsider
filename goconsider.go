@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"path/filepath"
 	"strings"
 
 	"github.com/dertseha/goconsider/internal/text"
@@ -41,6 +42,7 @@ func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
 		settings: settings,
 		fset:     fset,
 	}
+	col.checkFilename(file)
 	col.checkIdent(file.Name, "Package name")
 	col.checkCommentGroups(file.Comments)
 	col.checkDecls(file.Decls)
@@ -87,6 +89,15 @@ func (col *issueCollector) checkIdent(ident *ast.Ident, typeString string) {
 		return
 	}
 	col.checkGeneric(ident.Name, typeString, ident.NamePos)
+}
+
+func (col *issueCollector) checkFilename(file *ast.File) {
+	rawFile := col.fset.File(file.Package)
+	if rawFile == nil {
+		return
+	}
+	_, filename := filepath.Split(rawFile.Name())
+	col.checkGeneric(filename, "Filename", file.Package)
 }
 
 func (col *issueCollector) checkCommentGroups(groups []*ast.CommentGroup) {

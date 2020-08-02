@@ -3,7 +3,7 @@
 `goconsider` is a linter for [Go](https://golang.org) that proposes different words or phrases
 found in identifier or comments.
 
-The tool considers comments, and any identifier that is free to be chosen.
+The tool considers comments, filenames, and any identifier that is free to be chosen.
 For example, it will raise an issue for the name of a declared type, but not if the code uses such a type.
 
 It comes with a default set of phrases to support an inclusive language.  
@@ -73,7 +73,7 @@ phrases:
 
 The algorithm is simple, yet effective enough to handle most likely cases.
 
-The tool considers comments and identifier that the user has control over.
+The tool considers comments and identifier (names) that the user has control over.
 
 First, the tool removes all punctuation from texts (in case of comments), as well as any casing.
 This also separates CamelCase words, and the tool tries to keep abbreviations as one word.
@@ -94,7 +94,6 @@ or a comment like `The bad thing maker does stuff`.
 ## TODO
 
 * Consider integration in `golangci-lint`.
-* Implement check for filenames themselves.
 
 ## Limits
 

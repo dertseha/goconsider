@@ -26,6 +26,12 @@ func TestLint(t *testing.T) {
 			expected: nil,
 		},
 		{
+			name: "testdata/issueInAbcdFilename.go",
+			expected: []goconsider.Issue{
+				makeIssue(1, 1, "Filename"),
+			},
+		},
+		{
 			name: "testdata/issueInPackageComment.go",
 			expected: []goconsider.Issue{
 				makeIssue(1, 1, "Comment"),
