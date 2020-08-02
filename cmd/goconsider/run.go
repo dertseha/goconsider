@@ -90,7 +90,7 @@ func printUsage(out io.Writer) {
 goconsider [OPTIONS] [FILES]
 Options:
 	-h, --help             Show this message
-	--settings <filename>  Name of a settings file. Defaults to '.goconsider' in current working directory.
+	--settings <filename>  Name of a settings file. Defaults to '` + implicitSettingsFilename + `' in current working directory.
 	--noReferences         Skip printing references as per settings for any found issues.
 `
 	_, _ = fmt.Fprint(out, usage)
