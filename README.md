@@ -91,14 +91,10 @@ So, the phrase `bad thing maker` will be found in identifiers such as`theBadThin
 or a comment like `The bad thing maker does stuff`.
 
 
-## TODO
-
-* Consider integration in `golangci-lint`.
-
 ## Limits
 
 * There is no ignore system for "false positives". This could be handled by using a linter framework, such as `golangci-lint`.
-* The word-finding algorithm is simple and can probably be tricked. If someone uses this tool and circumvents it this way, it's not an issue of the tool.
+* The word-finding algorithm is simple and can probably be tricked. If someone uses this tool *and* circumvents it this way, it's not an issue of the tool.
 * There is no concept of automatic singular/plural detection. For such phrases, provide additional variants as synonyms.
 
 ## License
