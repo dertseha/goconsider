@@ -1,5 +1,8 @@
 # goconsider
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/dertseha/goconsider)](https://goreportcard.com/report/github.com/dertseha/goconsider)
+[![Lint Status](https://github.com/dertseha/goconsider/workflows/golangci-lint/badge.svg)](https://github.com/dertseha/goconsider/actions)
+
 `goconsider` is a linter for [Go](https://golang.org) that proposes different words or phrases
 found in identifier or comments.
 
