@@ -51,11 +51,11 @@ func run(out io.Writer, rawArgs []string) error {
 		return err
 	}
 
-	fset, files, err := parseFiles(args.filenames)
+	fset, files, err := parseFiles(reportTo(out), args.filenames)
 	if err != nil {
 		return err
 	}
-	issueCount := lintAndReport(out, fset, files, settings, !args.noReferences)
+	issueCount := lintAndReport(out, reportTo(out), fset, files, settings, !args.noReferences)
 	if issueCount > 0 {
 		return issuesFoundError(issueCount)
 	}
@@ -141,7 +141,7 @@ type pathOrErr struct {
 	err      error
 }
 
-func parseFiles(filenames []string) (*token.FileSet, []*ast.File, error) {
+func parseFiles(report issueReporter, filenames []string) (*token.FileSet, []*ast.File, error) {
 	var files []*ast.File
 	fset := token.NewFileSet()
 	for _, filename := range filenames {
@@ -153,7 +153,13 @@ func parseFiles(filenames []string) (*token.FileSet, []*ast.File, error) {
 
 			file, err := parser.ParseFile(fset, p.filepath, nil, parser.ParseComments)
 			if err != nil {
-				return nil, nil, fmt.Errorf("failed to parse file '%s': %w", p.filepath, err)
+				report(token.Position{
+					Filename: p.filepath,
+					Offset:   0,
+					Line:     1,
+					Column:   1,
+				}, "failed to parse file")
+				continue
 			}
 			files = append(files, file)
 		}
@@ -196,14 +202,16 @@ func isAGoFile(info os.FileInfo) bool {
 	return !info.IsDir() && strings.HasSuffix(info.Name(), ".go")
 }
 
-func lintAndReport(out io.Writer, fset *token.FileSet, files []*ast.File, settings goconsider.Settings, reportRef bool) int {
+func lintAndReport(out io.Writer, reporter issueReporter,
+	fset *token.FileSet, files []*ast.File,
+	settings goconsider.Settings, reportRef bool) int {
 	issueCount := 0
 	references := make(map[string]struct{})
 	for _, file := range files {
 		issues := goconsider.Lint(file, fset, settings)
 		issueCount += len(issues)
 		for _, issue := range issues {
-			_, _ = fmt.Fprintf(out, "%s: %s\n", issue.Pos, issue.Message)
+			reporter(issue.Pos, issue.Message)
 			for _, ref := range issue.References {
 				references[ref] = struct{}{}
 			}
@@ -221,4 +229,12 @@ func lintAndReport(out io.Writer, fset *token.FileSet, files []*ast.File, settin
 		}
 	}
 	return issueCount
+}
+
+type issueReporter func(pos token.Position, message string)
+
+func reportTo(out io.Writer) issueReporter {
+	return func(pos token.Position, message string) {
+		_, _ = fmt.Fprintf(out, "%s: %s\n", pos, message)
+	}
 }
