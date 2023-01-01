@@ -17,7 +17,7 @@ code:
 type MasterIndex int
 
 output:
-file.go:1:6: Type name contains 'master', consider rephrasing to one of [primary, leader, main]
+file.go:1:6: Type name contains 'master', consider rephrasing to one of ['primary', 'leader', 'main'].
 ```
 
 ## Install
@@ -31,18 +31,22 @@ go get -u github.com/dertseha/goconsider/cmd/goconsider
 ## Run
 
 ```sh
-goconsider ./project-dir
+cd go-project-dir
+goconsider ./...
 ```
 
 ### Usage
 ```
 > goconsider --help
-Usage:
-goconsider [OPTIONS] [FILES]
-Options:
-        -h, --help             Show this message
-        --settings <filename>  Name of a settings file. Defaults to '.goconsider.yaml' in current working directory.
-        --noReferences         Skip printing references as per settings for any found issues.
+goconsider: proposes alternatives for words or phrases found in source
+
+Usage: goconsider [-flag] [package]
+
+Flags:
+  ... (several flags supported by go/analysis) 
+  -settings string
+        name of a settings file (defaults to '.goconsider.yaml' in current working directory)
+  ...
 ```
 
 ## Configuration
@@ -62,13 +66,22 @@ It also proposes alternatives. See file [`default.yaml`](pkg/settings/default.ya
 Command argument `-settings <filename>` will load the given `YAML` file.
 Example: 
 ```
+references:
+  guide: https://example.com/guide
+  dsl: https://example.com/dsl
+  req: https://example.com/requirements
+
+formatting:
+  # By default false, a setting of true causes the long references to be printed for each issue.
+  withReferences: true
+
 phrases:
   - synonyms: [unwanted, variant]
     alternatives: [better, also good]
-    references: [https://example.com/guide]
+    references: [guide]
   - synonyms: [not good, worse]
     alternatives: [only this]
-    references: [https://example.com/dsl, https://example.com/requirements]
+    references: [dsl, req]
 ```
 
 ## Algorithm
@@ -98,6 +111,13 @@ The settings then specify which phrases to look for. Phrases allow looking for "
 So, the phrase `bad thing maker` will be found in identifiers such as`theBadThingMakerErr`,
 or a comment like `The bad thing maker does stuff`.
 
+## Recommendations
+
+### References for phrases
+
+For provided configurations, it is not required that phrases have any reference.
+However, having references helps to trace to the origin why a phrase is found.
+This could also be achieved by commit messages, yet these are not printed in the result list.
 
 ## Limits
 
