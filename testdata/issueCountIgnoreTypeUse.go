@@ -1,6 +1,6 @@
 package testdata
 
-type AbcdType int
+type AbcdType int // want `Type name contains 'abcd', consider rephrasing to something else`
 
 type WrappedType AbcdType
 

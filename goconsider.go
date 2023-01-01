@@ -21,60 +21,20 @@ func NewAnalyzer(settings Settings) *analysis.Analyzer {
 }
 
 func run(settings Settings, pass *analysis.Pass) (interface{}, error) {
-	inspect := func(node ast.Node) bool {
-
-		switch typedSpec := node.(type) {
-		case *ast.CommentGroup:
-			checkCommentGroup(pass, settings, typedSpec)
-		}
-		return true
-	}
-
 	for _, f := range pass.Files {
-		checkFilename(pass, settings, f)
-		ast.Inspect(f, inspect)
+		col := issueCollector{
+			settings:         settings,
+			pass:             pass,
+			issuesSuppressed: false,
+		}
+		col.checkFile(f)
 	}
 	return nil, nil
 }
 
-func checkGeneric(pass *analysis.Pass, settings Settings, s string, typeString string, pos token.Pos) {
-	worded := text.Wordify(s)
-	for _, phrase := range settings.Phrases {
-		for _, synonym := range phrase.Synonyms {
-			if strings.Contains(worded, " "+synonym+" ") {
-				pass.Report(analysis.Diagnostic{
-					Pos:     pos,
-					Message: considerMessage(typeString, synonym, phrase.Alternatives),
-				})
-			}
-		}
-	}
-}
-
-func checkFilename(pass *analysis.Pass, settings Settings, file *ast.File) {
-	rawFile := pass.Fset.File(file.Package)
-	if rawFile == nil {
-		return
-	}
-	_, filename := filepath.Split(rawFile.Name())
-	checkGeneric(pass, settings, filename, "Filename", file.Package)
-}
-
-func checkCommentGroup(pass *analysis.Pass, settings Settings, group *ast.CommentGroup) {
-	checkGeneric(pass, settings, group.Text(), "Comment", group.Pos())
-}
-
-// Issue describes an occurrence of an unwanted phrase.
-type Issue struct {
-	Pos        token.Position
-	Message    string
-	References []string
-}
-
 type issueCollector struct {
 	settings Settings
-	fset     *token.FileSet
-	issues   []Issue
+	pass     *analysis.Pass
 
 	issuesSuppressed bool
 }
@@ -90,17 +50,11 @@ func alternative(list []string) string {
 	return "one of [" + strings.Join(list, ", ") + "]"
 }
 
-// Lint runs analysis on the provided code.
-func Lint(file *ast.File, fset *token.FileSet, settings Settings) []Issue {
-	col := issueCollector{
-		settings: settings,
-		fset:     fset,
-	}
+func (col *issueCollector) checkFile(file *ast.File) {
 	col.checkFilename(file)
 	col.checkIdent(file.Name, "Package name")
 	col.checkCommentGroups(file.Comments)
 	col.checkDecls(file.Decls)
-	return col.issues
 }
 
 func (col *issueCollector) suppressIssues(on bool) func() {
@@ -113,12 +67,10 @@ func (col *issueCollector) addIssue(typeString string, pos token.Pos, synonym st
 	if col.issuesSuppressed {
 		return
 	}
-	issue := Issue{
-		Pos:        col.fset.Position(pos),
-		Message:    considerMessage(typeString+" contains", synonym, phrase.Alternatives),
-		References: phrase.References,
-	}
-	col.issues = append(col.issues, issue)
+	col.pass.Report(analysis.Diagnostic{
+		Pos:     pos,
+		Message: considerMessage(typeString, synonym, phrase.Alternatives),
+	})
 }
 
 func (col *issueCollector) checkGeneric(s string, typeString string, pos token.Pos) {
@@ -146,12 +98,12 @@ func (col *issueCollector) checkIdent(ident *ast.Ident, typeString string) {
 }
 
 func (col *issueCollector) checkFilename(file *ast.File) {
-	rawFile := col.fset.File(file.Package)
+	rawFile := col.pass.Fset.File(file.Package)
 	if rawFile == nil {
 		return
 	}
 	_, filename := filepath.Split(rawFile.Name())
-	col.checkGeneric(filename, "Filename", file.Package)
+	col.checkGeneric(filename, "File name", file.Package)
 }
 
 func (col *issueCollector) checkCommentGroups(groups []*ast.CommentGroup) {

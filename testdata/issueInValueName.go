@@ -2,11 +2,11 @@ package testdata
 
 import "fmt"
 
-const AbcdConstant = 1234
+const AbcdConstant = 1234 // want `Value name contains 'abcd', consider rephrasing to something else`
 
-var abcdGlobal = 1234
+var abcdGlobal = 1234 // want `Value name contains 'abcd', consider rephrasing to something else`
 
 func ConstantFunc() {
-	const LocalAbcdConstant = ""
+	const LocalAbcdConstant = "" // want `Value name contains 'abcd', consider rephrasing to something else`
 	fmt.Println(LocalAbcdConstant)
 }
