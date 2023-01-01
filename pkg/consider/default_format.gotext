@@ -1,10 +1,10 @@
 {{- /*gotype: github.com/dertseha/goconsider/pkg/consider.formatModel*/ -}}
 {{.Context}} contains '{{.Found}}'{{- /* */ -}}
 , consider rephrasing to {{if gt (len .Alternatives) 1}}one of ['{{join .Alternatives "', '"}}']{{else if eq (len .Alternatives) 1}}'{{index .Alternatives 0}}'{{else}}something else{{end}}.{{- /* */ -}}
-{{- if gt (len .ShortReferences) 0}} See also {{join .ShortReferences ", "}}.{{end -}}
+{{- if gt (len .References) 0}} See also {{range $refIndex, $ref := .References}}{{if gt $refIndex 0}}, {{end}}{{$ref.Short}}{{end}}.{{end -}}
 {{- if .PrintReferences}}
     References:
     {{- range .References}}
-    {{. -}}
+    {{if gt (len .Long) 0}}{{.Long}}{{else}}{{.Short}}{{end -}}
     {{end -}}
 {{- end -}}

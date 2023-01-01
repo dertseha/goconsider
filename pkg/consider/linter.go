@@ -354,21 +354,18 @@ func (l *Linter) checkFuncLit(funcLit *ast.FuncLit) {
 
 func (l *Linter) formatMessage(context, found string, phrase Phrase) string {
 	model := formatModel{
-		Context:         context,
-		Found:           found,
-		Alternatives:    phrase.Alternatives,
-		ShortReferences: phrase.References,
-		References:      nil,
+		Context:      context,
+		Found:        found,
+		Alternatives: phrase.Alternatives,
 
 		PrintReferences: (l.settings.Formatting.WithReferences != nil) && *l.settings.Formatting.WithReferences,
 	}
-	for _, short := range model.ShortReferences {
-		long := l.settings.References[short]
-		if len(long) > 0 {
-			model.References = append(model.References, long)
-		} else {
-			model.References = append(model.References, short)
+	for _, short := range phrase.References {
+		ref := referenceModel{
+			Short: short,
+			Long:  l.settings.References[short],
 		}
+		model.References = append(model.References, ref)
 	}
 	return l.formatter.Format(model)
 }
