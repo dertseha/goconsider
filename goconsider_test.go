@@ -5,18 +5,18 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/dertseha/goconsider"
+	"github.com/dertseha/goconsider/pkg/consider"
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
 func TestAll(t *testing.T) {
-	settings := goconsider.Settings{
-		Phrases: []goconsider.Phrase{
+	settings := consider.Settings{
+		Phrases: []consider.Phrase{
 			{Synonyms: []string{"abcd"}, Alternatives: nil},
 		},
 	}
 
-	analysistest.Run(t, testdataDir(), goconsider.NewAnalyzer(settings), "./...")
+	analysistest.Run(t, testdataDir(), consider.NewAnalyzer(settings), "./...")
 }
 
 func testdataDir() string {

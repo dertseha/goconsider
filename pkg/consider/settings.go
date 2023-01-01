@@ -1,4 +1,4 @@
-package goconsider
+package consider
 
 // Settings contain all the parameters for the analysis.
 type Settings struct {

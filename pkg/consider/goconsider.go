@@ -1,4 +1,4 @@
-package goconsider
+package consider
 
 import (
 	"fmt"

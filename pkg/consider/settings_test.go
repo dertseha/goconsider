@@ -1,13 +1,13 @@
-package goconsider_test
+package consider_test
 
 import (
 	"testing"
 
-	"github.com/dertseha/goconsider"
+	"github.com/dertseha/goconsider/pkg/consider"
 )
 
 func TestDefaultSettingsPhrasesComeWithReferences(t *testing.T) {
-	settings := goconsider.DefaultSettings()
+	settings := consider.DefaultSettings()
 	for _, phrase := range settings.Phrases {
 		n := len(phrase.References)
 		if n == 0 {
