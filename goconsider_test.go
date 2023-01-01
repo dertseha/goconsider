@@ -43,29 +43,30 @@ func TestSettingsExplicit(t *testing.T) {
 	analysistest.Run(t, testdataDir(t, "settings", "explicit"), a, "./...")
 }
 
-func cdWorkingDir(t testing.TB, nested ...string) {
-	base := testBaseDir(t)
-	t.Helper()
-	t.Cleanup(func() { _ = os.Chdir(base) })
-	allPaths := []string{testBaseDir(t), "testdata"}
+func cdWorkingDir(tb testing.TB, nested ...string) {
+	tb.Helper()
+	base := testBaseDir(tb)
+	tb.Cleanup(func() { _ = os.Chdir(base) })
+	allPaths := []string{testBaseDir(tb), "testdata"}
 	allPaths = append(allPaths, nested...)
 	err := os.Chdir(path.Join(allPaths...))
 	if err != nil {
-		t.Fatalf("Failed to change test directory: %v", err)
+		tb.Fatalf("Failed to change test directory: %v", err)
 	}
 }
 
-func testdataDir(t testing.TB, nested ...string) string {
-	t.Helper()
-	allPaths := []string{testBaseDir(t), "testdata"}
+func testdataDir(tb testing.TB, nested ...string) string {
+	tb.Helper()
+	allPaths := []string{testBaseDir(tb), "testdata"}
 	allPaths = append(allPaths, nested...)
 	return filepath.Join(allPaths...)
 }
 
-func testBaseDir(t testing.TB) string {
+func testBaseDir(tb testing.TB) string {
+	tb.Helper()
 	_, testFilename, _, ok := runtime.Caller(1)
 	if !ok {
-		t.Fatalf("unable to get current test filename")
+		tb.Fatalf("unable to get current test filename")
 	}
 	return filepath.Dir(testFilename)
 }

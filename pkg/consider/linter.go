@@ -33,7 +33,10 @@ func NewLinter(settings Settings, reporter Reporter) *Linter {
 	}
 }
 
+// CheckFile runs the analysis on given file.
 func (l *Linter) CheckFile(file *ast.File, rawFile *token.File) {
+	l.issuesSuppressed = false
+
 	l.checkFilename(file, rawFile)
 	l.checkIdent(file.Name, "Package name")
 	l.checkCommentGroups(file.Comments)
