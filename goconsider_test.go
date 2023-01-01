@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/dertseha/goconsider/pkg/analyzer"
 	"github.com/dertseha/goconsider/pkg/consider"
 	"golang.org/x/tools/go/analysis/analysistest"
 )
@@ -16,7 +17,7 @@ func TestAll(t *testing.T) {
 		},
 	}
 
-	analysistest.Run(t, testdataDir(), consider.NewAnalyzer(settings), "./...")
+	analysistest.Run(t, testdataDir(), analyzer.NewAnalyzer(settings), "./...")
 }
 
 func testdataDir() string {
