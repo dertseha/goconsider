@@ -3,8 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/dertseha/goconsider)](https://goreportcard.com/report/github.com/dertseha/goconsider)
 [![Lint Status](https://github.com/dertseha/goconsider/workflows/golangci-lint/badge.svg)](https://github.com/dertseha/goconsider/actions)
 
-`goconsider` is a linter for [Go](https://golang.org) that proposes different words or phrases
-found in identifier or comments.
+`goconsider` is a linter for [Go](https://golang.org) that proposes different words or phrases found in identifiers or comments.
 
 The tool considers comments, filenames, and any identifier that is free to be chosen.
 For example, it will raise an issue for the name of a declared type, but not if the code uses such a type.
@@ -18,7 +17,7 @@ code:
 type MasterIndex int
 
 output:
-file.go:1:6: Type name contains 'master', consider rephrasing to one of [primary, leader, main]
+file.go:1:6: Type name contains 'master', consider rephrasing to one of ['primary', 'leader', 'main'].
 ```
 
 ## Install
@@ -32,18 +31,22 @@ go get -u github.com/dertseha/goconsider/cmd/goconsider
 ## Run
 
 ```sh
-goconsider ./project-dir
+cd go-project-dir
+goconsider ./...
 ```
 
 ### Usage
 ```
 > goconsider --help
-Usage:
-goconsider [OPTIONS] [FILES]
-Options:
-        -h, --help             Show this message
-        --settings <filename>  Name of a settings file. Defaults to '.goconsider.yaml' in current working directory.
-        --noReferences         Skip printing references as per settings for any found issues.
+goconsider: proposes alternatives for words or phrases found in source
+
+Usage: goconsider [-flag] [package]
+
+Flags:
+  ... (several flags supported by go/analysis) 
+  -settings string
+        name of a settings file (defaults to '.goconsider.yaml' in current working directory)
+  ...
 ```
 
 ## Configuration
@@ -51,48 +54,70 @@ Options:
 ### Default
 #### Implicit
 The tool will look for a `.goconsider.yaml` file in the current working directory.
-See "explicit" configuration, below, for an example.
+See "explicit" configuration, below, for an example of its format.
 
 If no such file exists, then the internal defaults will be used. 
 
 #### Internal
 The tool comes with a list of English phrases that are considered inappropriate.
-It also proposes alternatives. See file [`settings.go`](settings.go).
+It also proposes alternatives. See file [`default.yaml`](pkg/settings/default.yaml).
 
 ### Explicit
-Command argument `--settings <filename>` will load the given `YAML` file.
+Command argument `-settings <filename>` will load the given `YAML` file.
 Example: 
 ```
+references:
+  guide: https://example.com/guide
+  dsl: https://example.com/dsl
+  req: https://example.com/requirements
+
+formatting:
+  # By default false, a setting of true causes the long references to be printed for each issue.
+  withReferences: true
+
 phrases:
   - synonyms: [unwanted, variant]
     alternatives: [better, also good]
-    references: [https://example.com/guide]
+    references: [guide]
   - synonyms: [not good, worse]
     alternatives: [only this]
-    references: [https://example.com/dsl, https://example.com/requirements]
+    references: [dsl, req]
 ```
 
 ## Algorithm
 
 The algorithm is simple, yet effective enough to handle most likely cases.
 
-The tool considers comments and identifier (names) that the user has control over.
+The tool considers comments and identifier (names) that the developer has control over and can change.
 
 First, the tool removes all punctuation from texts (in case of comments), as well as any casing.
 This also separates CamelCase words, and the tool tries to keep abbreviations as one word.
-A Block of comment is considered as one long text. 
+A block of comment is considered as one long text. 
 
 For example, the following texts all result in "this is an example" for further processing:
 ```
 ThisIsAnExample
 This-is-an-example
 this is. An Example
+
+as well as
+
+// this is
+// an
+// example
 ```
 
 The settings then specify which phrases to look for. Phrases allow looking for "word combinations".
 So, the phrase `bad thing maker` will be found in identifiers such as`theBadThingMakerErr`,
 or a comment like `The bad thing maker does stuff`.
 
+## Recommendations
+
+### References for phrases
+
+For provided configurations, it is not required that phrases have any reference.
+However, having references helps to trace to the origin why a phrase is found.
+This could also be achieved by commit messages, yet these are not printed in the result list.
 
 ## Limits
 

@@ -1,0 +1,13 @@
+references:
+  keyed: a long reference that is only shown if requested
+
+phrases:
+  - synonyms: [abc]
+    alternatives: [def]
+    references: [direct, keyed]
+  - synonyms: [single]
+    alternatives: []
+    references: [keyed]
+
+formatting:
+  withReferences: true

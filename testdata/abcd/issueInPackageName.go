@@ -1,4 +1,0 @@
-package abcd
-
-func Run() {
-}
