@@ -1,7 +1,6 @@
 package analyzer
 
 import (
-	"flag"
 	"go/token"
 	"os"
 	"path"
@@ -20,29 +19,42 @@ const (
 
 // NewAnalyzer returns a new instance with the given settings.
 func NewAnalyzer(s consider.Settings) *analysis.Analyzer {
-	return &analysis.Analyzer{
-		Name: analyzerName,
-		Doc:  documentation,
-		Run:  func(pass *analysis.Pass) (interface{}, error) { return run(s, pass) },
-	}
+	an := newBaseAnalyzer()
+	an.Run = runnerWithSettingsFrom(func() (consider.Settings, error) { return s, nil })
+	return an
+}
+
+// NewAnalyzerFromSettingsFile returns a new instance that will load the settings from a file at given path.
+// If the given string is empty, defaults will apply.
+func NewAnalyzerFromSettingsFile(settingsFile string) *analysis.Analyzer {
+	an := newBaseAnalyzer()
+	an.Run = runnerWithSettingsFrom(func() (consider.Settings, error) { return resolveSettings(settingsFile) })
+	return an
 }
 
 // NewAnalyzerFromFlags returns an instance that defers to configuration via flags.
 func NewAnalyzerFromFlags() *analysis.Analyzer {
-	var flags flag.FlagSet
-	settingsFile := flags.String("settings", "",
+	an := newBaseAnalyzer()
+	settingsFile := an.Flags.String("settings", "",
 		"name of a settings file (defaults to '"+implicitSettingsFilename+"' in current working directory)")
+	an.Run = runnerWithSettingsFrom(func() (consider.Settings, error) { return resolveSettings(*settingsFile) })
+	return an
+}
+
+func newBaseAnalyzer() *analysis.Analyzer {
 	return &analysis.Analyzer{
-		Name:  analyzerName,
-		Doc:   documentation,
-		Flags: flags,
-		Run: func(pass *analysis.Pass) (interface{}, error) {
-			s, err := resolveSettings(*settingsFile)
-			if err != nil {
-				return nil, err
-			}
-			return run(s, pass)
-		},
+		Name: analyzerName,
+		Doc:  documentation,
+	}
+}
+
+func runnerWithSettingsFrom(factory func() (consider.Settings, error)) func(*analysis.Pass) (interface{}, error) {
+	return func(pass *analysis.Pass) (interface{}, error) {
+		s, err := factory()
+		if err != nil {
+			return nil, err
+		}
+		return run(s, pass)
 	}
 }
 
