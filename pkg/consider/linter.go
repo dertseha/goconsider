@@ -1,7 +1,6 @@
 package consider
 
 import (
-	"fmt"
 	"go/ast"
 	"go/token"
 	"path/filepath"
@@ -18,8 +17,9 @@ type Reporter interface {
 
 // Linter is the main type of the linting functionality.
 type Linter struct {
-	settings Settings
-	reporter Reporter
+	settings  Settings
+	formatter *formatter
+	reporter  Reporter
 
 	issuesSuppressed bool
 }
@@ -28,6 +28,7 @@ type Linter struct {
 func NewLinter(settings Settings, reporter Reporter) *Linter {
 	return &Linter{
 		settings:         settings,
+		formatter:        newFormatter(),
 		reporter:         reporter,
 		issuesSuppressed: false,
 	}
@@ -53,7 +54,7 @@ func (l *Linter) addIssue(typeString string, pos token.Pos, synonym string, phra
 	if l.issuesSuppressed {
 		return
 	}
-	l.reporter.Report(pos, considerMessage(typeString, synonym, phrase.Alternatives))
+	l.reporter.Report(pos, l.formatMessage(typeString, synonym, phrase))
 }
 
 func (l *Linter) checkGeneric(s string, typeString string, pos token.Pos) {
@@ -351,13 +352,23 @@ func (l *Linter) checkFuncLit(funcLit *ast.FuncLit) {
 	reset()
 }
 
-func considerMessage(context, phrase string, alternatives []string) string {
-	return fmt.Sprintf("%s contains '%s', consider rephrasing to %s", context, phrase, alternative(alternatives))
-}
+func (l *Linter) formatMessage(context, found string, phrase Phrase) string {
+	model := formatModel{
+		Context:         context,
+		Found:           found,
+		Alternatives:    phrase.Alternatives,
+		ShortReferences: phrase.References,
+		References:      nil,
 
-func alternative(list []string) string {
-	if len(list) == 0 {
-		return "something else"
+		PrintReferences: (l.settings.Formatting.WithReferences != nil) && *l.settings.Formatting.WithReferences,
 	}
-	return "one of [" + strings.Join(list, ", ") + "]"
+	for _, short := range model.ShortReferences {
+		long := l.settings.References[short]
+		if len(long) > 0 {
+			model.References = append(model.References, long)
+		} else {
+			model.References = append(model.References, short)
+		}
+	}
+	return l.formatter.Format(model)
 }

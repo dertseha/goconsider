@@ -1,9 +1,13 @@
-# While the references are not part of the internally used configuration, they are useful to refer to when in doubt.
 references:
   linuxKernel: "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49decddd39e5f6132ccd7d9fdc3d7c470b0061bb"
   twitter: "https://www.cnet.com/news/twitter-engineers-replace-racially-loaded-tech-terms-like-master-slave/"
   google: "https://developers.google.com/style/inclusive-documentation"
   googlePronouns: "https://developers.google.com/style/pronouns#gender-neutral-pronouns"
+
+formatting:
+  # To exclude the long-form of the references is the default,
+  # yet it is included here to showcase the full list of possibilities.
+  with-references: false
 
 phrases:
   - synonyms: [master, masters]

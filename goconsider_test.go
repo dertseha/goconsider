@@ -43,6 +43,13 @@ func TestSettingsExplicit(t *testing.T) {
 	analysistest.Run(t, testdataDir(t, "settings", "explicit"), a, "./...")
 }
 
+func TestSettingsWithReferences(t *testing.T) {
+	cdWorkingDir(t, "settings", "references")
+	a := analyzer.NewAnalyzerFromFlags()
+	_ = a.Flags.Parse([]string{})
+	analysistest.Run(t, testdataDir(t, "settings", "references"), a, "./...")
+}
+
 func cdWorkingDir(tb testing.TB, nested ...string) {
 	tb.Helper()
 	base := testBaseDir(tb)
