@@ -9,7 +9,6 @@ import (
 	"github.com/dertseha/goconsider"
 )
 
-// nolint: funlen
 func TestLint(t *testing.T) {
 	makeIssue := func(line, col int, prefix string) goconsider.Issue {
 		return goconsider.Issue{

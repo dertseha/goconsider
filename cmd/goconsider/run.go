@@ -6,14 +6,13 @@ import (
 	"go/parser"
 	"go/token"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/dertseha/goconsider"
 )
@@ -25,10 +24,12 @@ type arguments struct {
 	settings     string
 }
 
-type issuesFoundError int
+type issuesFoundError struct {
+	number int
+}
 
 func (err issuesFoundError) Error() string {
-	return fmt.Sprintf("%v issues were found", int(err))
+	return fmt.Sprintf("%v issues were found", err.number)
 }
 
 func run(out io.Writer, rawArgs []string) error {
@@ -57,7 +58,7 @@ func run(out io.Writer, rawArgs []string) error {
 	}
 	issueCount := lintAndReport(out, reportTo(out), fset, files, settings, !args.noReferences)
 	if issueCount > 0 {
-		return issuesFoundError(issueCount)
+		return issuesFoundError{number: issueCount}
 	}
 	return nil
 }
@@ -73,7 +74,7 @@ func defaultSettings() (goconsider.Settings, error) {
 }
 
 func parseSettings(filename string) (goconsider.Settings, error) {
-	settingsData, err := ioutil.ReadFile(filename) // nolint: gosec
+	settingsData, err := os.ReadFile(filename)
 	if err != nil {
 		return goconsider.Settings{}, err
 	}

@@ -1,3 +1,4 @@
+// Package main provides the main entry function for the standalone linter executable.
 package main
 
 import (

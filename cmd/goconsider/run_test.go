@@ -1,7 +1,8 @@
-package main // nolint: testpackage
+package main
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"path"
 	"testing"
@@ -12,7 +13,7 @@ func TestReportIssuesWithDefaultSettings(t *testing.T) {
 	err := run(out, []string{path.Join(".", "testdata", "issues", "default.go")})
 	if err == nil {
 		t.Errorf("error expected")
-	} else if _, isOK := err.(issuesFoundError); !isOK {
+	} else if !errors.As(err, &issuesFoundError{}) {
 		t.Errorf("unexpected error returned: %v", err)
 	}
 }
@@ -25,7 +26,7 @@ func TestReportIssuesWithExplicitSettings(t *testing.T) {
 	})
 	if err == nil {
 		t.Errorf("error expected")
-	} else if _, isOK := err.(issuesFoundError); !isOK {
+	} else if !errors.As(err, &issuesFoundError{}) {
 		t.Errorf("unexpected error returned: %v", err)
 	}
 }
@@ -41,7 +42,7 @@ func TestReportIssuesWithImplicitSettings(t *testing.T) {
 	})
 	if err == nil {
 		t.Errorf("error expected")
-	} else if _, isOK := err.(issuesFoundError); !isOK {
+	} else if !errors.As(err, &issuesFoundError{}) {
 		t.Errorf("unexpected error returned: %v", err)
 	}
 }
