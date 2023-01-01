@@ -16,6 +16,7 @@ func TestReporting(t *testing.T) {
 	settings := consider.Settings{
 		Phrases: []consider.Phrase{
 			{Synonyms: []string{"abcd"}, Alternatives: nil},
+			{Synonyms: []string{"a long phrase that may go across multiple lines"}, Alternatives: nil},
 		},
 	}
 
