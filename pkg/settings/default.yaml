@@ -1,7 +1,7 @@
 references:
   linuxKernel: "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49decddd39e5f6132ccd7d9fdc3d7c470b0061bb"
-  twitter: "https://www.cnet.com/news/twitter-engineers-replace-racially-loaded-tech-terms-like-master-slave/"
-  google: "https://developers.google.com/style/inclusive-documentation"
+  cnetTwitter: "https://www.cnet.com/news/twitter-engineers-replace-racially-loaded-tech-terms-like-master-slave/"
+  googleDoc: "https://developers.google.com/style/inclusive-documentation"
   googlePronouns: "https://developers.google.com/style/pronouns#gender-neutral-pronouns"
 
 formatting:
@@ -12,36 +12,36 @@ formatting:
 phrases:
   - synonyms: [master, masters]
     alternatives: [primary, leader, main]
-    references: [linuxKernel, twitter]
+    references: [linuxKernel, cnetTwitter]
 
   - synonyms: [slave, slaves]
     alternatives: [secondary, follower, replica, standby]
-    references: [linuxKernel, twitter]
+    references: [linuxKernel, cnetTwitter]
 
   - synonyms: [whitelist, whitelists]
     alternatives: [allowlist, passlist]
-    references: [linuxKernel, twitter]
+    references: [linuxKernel, cnetTwitter]
 
   - synonyms: [grandfathered]
     alternatives: [legacy status]
-    references: [twitter]
+    references: [cnetTwitter]
 
   - synonyms: [guy, guys]
     alternatives: [people, folks, you all]
-    references: [twitter]
+    references: [cnetTwitter]
 
   - synonyms: [he, his, him, she, her]
     alternatives: [their, them]
-    references: [googlePronouns, twitter]
+    references: [googlePronouns, cnetTwitter]
 
   - synonyms: [man hour, man hours]
     alternatives: [person hours, engineer hours]
-    references: [google, twitter]
+    references: [googleDoc, cnetTwitter]
 
   - synonyms: [dummy, dummies]
     alternatives: [placeholder, sample]
-    references: [google, twitter]
+    references: [googleDoc, cnetTwitter]
 
   - synonyms: [sanity check, sanity checks]
     alternatives: [quick check]
-    references: [google, twitter]
+    references: [googleDoc, cnetTwitter]
