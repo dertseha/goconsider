@@ -1,21 +1,59 @@
-service:
-  golangci-lint-version: 1.28.x
-
 run:
   deadline: 5m
 
 linters:
-  enable-all: true
+  disable-all: true
 
-  # linters are disabled if their majority of issues is considered false-positive (intended code)
-  # and the remaining issues (if existing) aren't worth it.
-  disable:
-    - wsl # too pedantic/subjective
-    - gofumpt # Stick to standard gofmt
+  enable:
+    - asciicheck
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errcheck
+    - errorlint
+    - exportloopref
+    - forbidigo
+    - goconst
+    - gocritic
+    - godot
+    - godox
+    - goerr113
+    - gofmt
+    - goheader
+    - goimports
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosimple
+    - govet
+    - importas
+    - ineffassign
+    - lll
+    - makezero
+    - misspell
+    - noctx
+    - nolintlint
+    - predeclared
+    - promlinter
+    - revive
+    - staticcheck
+    # - structcheck # Disabled for lack of generics support
+    - tagliatelle
+    - testpackage
+    - thelper
+    - tparallel
+    - typecheck
+    - unconvert
+    - unused
+    - varcheck
+    # - wastedassign # Disabled for lack of generics support
+    - whitespace
 
 issues:
   exclude-use-default: false # disable filtering of defaults for better zero-issue policy
-  exclude:
   max-per-linter: 0 # disable limit; report all issues of a linter
   max-same-issues: 0 # disable limit; report all issues of the same issue
 
