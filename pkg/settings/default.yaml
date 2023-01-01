@@ -9,27 +9,35 @@ phrases:
   - synonyms: [master, masters]
     alternatives: [primary, leader, main]
     references: [linuxKernel, twitter]
+
   - synonyms: [slave, slaves]
     alternatives: [secondary, follower, replica, standby]
     references: [linuxKernel, twitter]
+
   - synonyms: [whitelist, whitelists]
     alternatives: [allowlist, passlist]
     references: [linuxKernel, twitter]
+
   - synonyms: [grandfathered]
     alternatives: [legacy status]
     references: [twitter]
+
   - synonyms: [guy, guys]
     alternatives: [people, folks, you all]
     references: [twitter]
+
   - synonyms: [he, his, him, she, her]
     alternatives: [their, them]
     references: [googlePronouns, twitter]
+
   - synonyms: [man hour, man hours]
     alternatives: [person hours, engineer hours]
     references: [google, twitter]
+
   - synonyms: [dummy, dummies]
     alternatives: [placeholder, sample]
     references: [google, twitter]
+
   - synonyms: [sanity check, sanity checks]
     alternatives: [quick check]
     references: [google, twitter]
