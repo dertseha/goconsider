@@ -1,4 +1,4 @@
-package testdata
+package reporting
 
 import (
 	abcd "fmt" // want `Package alias contains 'abcd', consider rephrasing to something else`

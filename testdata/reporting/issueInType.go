@@ -1,4 +1,4 @@
-package testdata
+package reporting
 
 type AbcdThing struct { // want `Type name contains 'abcd', consider rephrasing to something else`
 	MemberNamedAbcd int // want `Member name contains 'abcd', consider rephrasing to something else`

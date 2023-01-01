@@ -1,4 +1,4 @@
-package testdata
+package reporting
 
 type AbcdType int // want `Type name contains 'abcd', consider rephrasing to something else`
 

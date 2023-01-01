@@ -1,4 +1,4 @@
-package testdata
+package reporting
 
 const (
 	// someConstant does things with abcd. // want `Comment contains 'abcd', consider rephrasing to something else`

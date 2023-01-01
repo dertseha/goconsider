@@ -1,4 +1,4 @@
-package testdata
+package reporting
 
 type TypeWithMethod int
 
