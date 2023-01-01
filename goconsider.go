@@ -8,7 +8,61 @@ import (
 	"strings"
 
 	"github.com/dertseha/goconsider/internal/text"
+	"golang.org/x/tools/go/analysis"
 )
+
+// NewAnalyzer returns a new instance with the given settings
+func NewAnalyzer(settings Settings) *analysis.Analyzer {
+	return &analysis.Analyzer{
+		Name: "goconsider",
+		Doc:  "proposes alternatives for words or phrases found in source",
+		Run:  func(pass *analysis.Pass) (interface{}, error) { return run(settings, pass) },
+	}
+}
+
+func run(settings Settings, pass *analysis.Pass) (interface{}, error) {
+	inspect := func(node ast.Node) bool {
+
+		switch typedSpec := node.(type) {
+		case *ast.CommentGroup:
+			checkCommentGroup(pass, settings, typedSpec)
+		}
+		return true
+	}
+
+	for _, f := range pass.Files {
+		checkFilename(pass, settings, f)
+		ast.Inspect(f, inspect)
+	}
+	return nil, nil
+}
+
+func checkGeneric(pass *analysis.Pass, settings Settings, s string, typeString string, pos token.Pos) {
+	worded := text.Wordify(s)
+	for _, phrase := range settings.Phrases {
+		for _, synonym := range phrase.Synonyms {
+			if strings.Contains(worded, " "+synonym+" ") {
+				pass.Report(analysis.Diagnostic{
+					Pos:     pos,
+					Message: considerMessage(typeString, synonym, phrase.Alternatives),
+				})
+			}
+		}
+	}
+}
+
+func checkFilename(pass *analysis.Pass, settings Settings, file *ast.File) {
+	rawFile := pass.Fset.File(file.Package)
+	if rawFile == nil {
+		return
+	}
+	_, filename := filepath.Split(rawFile.Name())
+	checkGeneric(pass, settings, filename, "Filename", file.Package)
+}
+
+func checkCommentGroup(pass *analysis.Pass, settings Settings, group *ast.CommentGroup) {
+	checkGeneric(pass, settings, group.Text(), "Comment", group.Pos())
+}
 
 // Issue describes an occurrence of an unwanted phrase.
 type Issue struct {
@@ -25,8 +79,8 @@ type issueCollector struct {
 	issuesSuppressed bool
 }
 
-func considerMessage(prefix, synonym string, alternatives []string) string {
-	return fmt.Sprintf("%s '%s', consider rephrasing to %s", prefix, synonym, alternative(alternatives))
+func considerMessage(context, phrase string, alternatives []string) string {
+	return fmt.Sprintf("%s contains '%s', consider rephrasing to %s", context, phrase, alternative(alternatives))
 }
 
 func alternative(list []string) string {
