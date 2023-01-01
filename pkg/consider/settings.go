@@ -26,5 +26,5 @@ type Phrase struct {
 type Formatting struct {
 	// WithReferences indicates whether the long-form of references shall be added.
 	// This is not done by default as this is done in separate lines.
-	WithReferences *bool `yaml:"with-references"`
+	WithReferences *bool `yaml:"withReferences"`
 }

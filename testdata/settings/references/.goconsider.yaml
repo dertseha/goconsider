@@ -10,4 +10,4 @@ phrases:
     references: [keyed]
 
 formatting:
-  with-references: true
+  withReferences: true

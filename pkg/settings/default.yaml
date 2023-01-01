@@ -7,7 +7,7 @@ references:
 formatting:
   # To exclude the long-form of the references is the default,
   # yet it is included here to showcase the full list of possibilities.
-  with-references: false
+  withReferences: false
 
 phrases:
   - synonyms: [master, masters]
