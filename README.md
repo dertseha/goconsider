@@ -3,8 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/dertseha/goconsider)](https://goreportcard.com/report/github.com/dertseha/goconsider)
 [![Lint Status](https://github.com/dertseha/goconsider/workflows/golangci-lint/badge.svg)](https://github.com/dertseha/goconsider/actions)
 
-`goconsider` is a linter for [Go](https://golang.org) that proposes different words or phrases
-found in identifier or comments.
+`goconsider` is a linter for [Go](https://golang.org) that proposes different words or phrases found in identifiers or comments.
 
 The tool considers comments, filenames, and any identifier that is free to be chosen.
 For example, it will raise an issue for the name of a declared type, but not if the code uses such a type.
@@ -51,16 +50,16 @@ Options:
 ### Default
 #### Implicit
 The tool will look for a `.goconsider.yaml` file in the current working directory.
-See "explicit" configuration, below, for an example.
+See "explicit" configuration, below, for an example of its format.
 
 If no such file exists, then the internal defaults will be used. 
 
 #### Internal
 The tool comes with a list of English phrases that are considered inappropriate.
-It also proposes alternatives. See file [`settings.go`](settings.go).
+It also proposes alternatives. See file [`default.yaml`](pkg/settings/default.yaml).
 
 ### Explicit
-Command argument `--settings <filename>` will load the given `YAML` file.
+Command argument `-settings <filename>` will load the given `YAML` file.
 Example: 
 ```
 phrases:
@@ -76,17 +75,23 @@ phrases:
 
 The algorithm is simple, yet effective enough to handle most likely cases.
 
-The tool considers comments and identifier (names) that the user has control over.
+The tool considers comments and identifier (names) that the developer has control over and can change.
 
 First, the tool removes all punctuation from texts (in case of comments), as well as any casing.
 This also separates CamelCase words, and the tool tries to keep abbreviations as one word.
-A Block of comment is considered as one long text. 
+A block of comment is considered as one long text. 
 
 For example, the following texts all result in "this is an example" for further processing:
 ```
 ThisIsAnExample
 This-is-an-example
 this is. An Example
+
+as well as
+
+// this is
+// an
+// example
 ```
 
 The settings then specify which phrases to look for. Phrases allow looking for "word combinations".
