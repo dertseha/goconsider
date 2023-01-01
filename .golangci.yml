@@ -7,7 +7,6 @@ linters:
   enable:
     - asciicheck
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
@@ -40,7 +39,6 @@ linters:
     - promlinter
     - revive
     - staticcheck
-    # - structcheck # Disabled for lack of generics support
     - tagliatelle
     - testpackage
     - thelper
@@ -48,8 +46,6 @@ linters:
     - typecheck
     - unconvert
     - unused
-    - varcheck
-    # - wastedassign # Disabled for lack of generics support
     - whitespace
 
 issues:
