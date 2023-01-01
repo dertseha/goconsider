@@ -31,7 +31,7 @@ func NewAnalyzer(s consider.Settings) *analysis.Analyzer {
 func NewAnalyzerFromFlags() *analysis.Analyzer {
 	var flags flag.FlagSet
 	settingsFile := flags.String("settings", "",
-		"Name of a settings file. Defaults to '"+implicitSettingsFilename+"' in current working directory.")
+		"name of a settings file (defaults to '"+implicitSettingsFilename+"' in current working directory)")
 	return &analysis.Analyzer{
 		Name:  analyzerName,
 		Doc:   documentation,
