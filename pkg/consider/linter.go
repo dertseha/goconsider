@@ -153,6 +153,7 @@ func (l *Linter) checkValueSpec(spec *ast.ValueSpec) {
 
 func (l *Linter) checkType(spec *ast.TypeSpec) {
 	l.checkIdent(spec.Name, "Type name")
+	l.checkFieldList(spec.TypeParams, "Type parameter name")
 	l.checkTypeExpr(spec.Type)
 }
 
@@ -171,6 +172,7 @@ func (l *Linter) checkTypeExpr(typeExpr ast.Expr) {
 }
 
 func (l *Linter) checkFuncType(funcType *ast.FuncType) {
+	l.checkFieldList(funcType.TypeParams, "Type parameter name")
 	l.checkFieldList(funcType.Params, "Parameter name")
 	l.checkFieldList(funcType.Results, "Result name")
 }
