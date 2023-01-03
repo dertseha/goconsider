@@ -1,11 +1,11 @@
-package analyzer
+package main
 
 import (
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/dertseha/goconsider/pkg/consider"
+	"github.com/dertseha/goconsider/internal/version"
 )
 
 // versionFlag attempts to adhere to the (apparently unspecified) contract of the -V functionality.
@@ -24,7 +24,7 @@ func (versionFlag) Set(s string) error {
 	name = name[strings.LastIndex(name, `\`)+1:]
 	name = strings.TrimSuffix(name, ".exe")
 
-	ver := consider.Version()
+	ver := version.Version()
 	fullSuffix := ""
 
 	if s == "full" {
