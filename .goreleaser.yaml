@@ -15,6 +15,9 @@ builds:
 
     mod_timestamp: '{{ .CommitTimestamp }}'
 
+    ldflags:
+      - -s -w -X 'github.com/dertseha/goconsider/pkg/consider.scmTag={{.Version}}' -X 'github.com/dertseha/goconsider/pkg/consider.scmCommit={{.Commit}}'
+
 archives:
   - format: tar.gz
     name_template: >-

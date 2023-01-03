@@ -42,10 +42,12 @@ func NewAnalyzerFromFlags() *analysis.Analyzer {
 }
 
 func newBaseAnalyzer() *analysis.Analyzer {
-	return &analysis.Analyzer{
+	an := &analysis.Analyzer{
 		Name: analyzerName,
 		Doc:  documentation,
 	}
+	an.Flags.Var(versionFlag{}, "V", "print version and exit")
+	return an
 }
 
 func runnerWithSettingsFrom(factory func() (consider.Settings, error)) func(*analysis.Pass) (interface{}, error) {
