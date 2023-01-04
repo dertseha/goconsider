@@ -22,11 +22,18 @@ file.go:1:6: Type name contains 'master', consider rephrasing to one of ['primar
 
 ## Install
 
-Build from source
+### Manual download
+
+Download the pre-compiled binaries from the [releases page](https://github.com/dertseha/goconsider/releases) and
+copy them to the desired location.
+
+### Via Go
 
 ```sh
-go get -u github.com/dertseha/goconsider/cmd/goconsider
+go install github.com/dertseha/goconsider/cmd/goconsider@latest
 ```
+
+> This puts the binary into `GOPATH/bin`.
 
 ## Run
 
