@@ -7,5 +7,7 @@ import (
 )
 
 func main() {
-	singlechecker.Main(analyzer.NewAnalyzerFromFlags())
+	an := analyzer.NewAnalyzerFromFlags()
+	an.Flags.Var(versionFlag{}, "V", "print version and exit")
+	singlechecker.Main(an)
 }
