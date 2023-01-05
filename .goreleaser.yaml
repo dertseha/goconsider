@@ -15,6 +15,9 @@ builds:
 
     mod_timestamp: '{{ .CommitTimestamp }}'
 
+    flags:
+      - -trimpath
+
     ldflags:
       - -s -w -X 'github.com/dertseha/goconsider/internal/version.scmTag={{.Version}}' -X 'github.com/dertseha/goconsider/internal/version.scmCommit={{.Commit}}'
 
