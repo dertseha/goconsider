@@ -2,8 +2,11 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/dertseha/goconsider)](https://goreportcard.com/report/github.com/dertseha/goconsider)
 [![Lint Status](https://github.com/dertseha/goconsider/workflows/golangci-lint/badge.svg)](https://github.com/dertseha/goconsider/actions)
+![Maintenance](https://img.shields.io/maintenance/no/2024)
 
 `goconsider` is a linter for [Go](https://golang.org) that proposes different words or phrases found in identifiers or comments.
+
+**This repository is unmaintained and the repository archived.**
 
 The tool considers comments, filenames, and any identifier that is free to be chosen.
 For example, it will raise an issue for the name of a declared type, but not if the code uses such a type.
